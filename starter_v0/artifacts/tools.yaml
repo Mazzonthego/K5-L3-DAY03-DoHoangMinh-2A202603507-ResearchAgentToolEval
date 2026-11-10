@@ -16,26 +16,26 @@
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
-    description: "Gửi một câu hỏi cho người dùng."
+    description: "Hỏi một câu rồi dừng chờ người dùng. Thiếu tài khoản/URL dùng text. Yêu cầu gửi/đăng chưa được xác nhận phải dùng yes_no trước; nếu chưa có nội dung, hỏi xác nhận chuẩn bị bản nháp để duyệt, không coi đó là quyền gửi nội dung chưa thấy. Không gọi tool khác cùng lượt."
     parameters:
       type: object
       properties:
         question: {type: string, default: "", description: "Câu hỏi"}
-        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời"}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "text để bổ sung thông tin; yes_no để xác nhận yêu cầu gửi/đăng hoặc chuẩn bị bản nháp; choice cần ít nhất hai lựa chọn."}
         options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
       required: [question]
 
   - name: timeline
-    description: "Lấy các bài đăng gần đây."
+    description: "Lấy bài đăng CỦA một tài khoản X/Twitter đã xác định. Không dùng cho tin web hay tìm bài VỀ một chủ đề. Thiếu tài khoản thì clarify."
     parameters:
       type: object
       properties:
-        screenname: {type: string, default: "", description: "Tên tài khoản"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        screenname: {type: string, default: "", description: "Handle không có @ hoặc URL. Ánh xạ trong ứng dụng: Elon Musk = elonmusk, Sam Altman = sama. Ưu tiên handle người dùng cung cấp."}
+        limit: {type: integer, default: 5, description: "Số bài nguyên dương theo yêu cầu; chỉ mặc định 5 nếu người dùng không nêu số lượng."}
       required: [screenname]
 
   - name: social_search
-    description: "Tìm trên mạng xã hội."
+    description: "Tìm bài VỀ chủ đề trên X/Twitter CHỈ khi yêu cầu hiện tại muốn tweet hoặc nguồn mạng xã hội. KHÔNG gọi cho tin tức web, tin hôm nay nói chung, hoặc sau khi người dùng bỏ Twitter và chuyển sang web. Không tự gọi thêm cùng lookup để bổ sung nguồn."
     parameters:
       type: object
       properties:
@@ -45,13 +45,13 @@ tools:
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: "Tìm thông tin hoặc tin tức trên web. Tin tức không nêu mạng xã hội mặc định dùng riêng lookup. Giữ chủ đề/thời gian từ lịch sử trừ phần người dùng sửa; chuyển từ Twitter sang web thì dùng lookup thay social_search. Chỉ gọi cả hai nếu người dùng vẫn yêu cầu cả hai nguồn."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        query: {type: string, default: "", description: "Chủ đề cần tìm, giữ tên riêng và acronym; bỏ từ yêu cầu chung như tin, tin tức, hôm nay vì đã có topic/timeframe. Khi đổi chủ đề chỉ dùng chủ đề mới."}
+        topic: {type: string, enum: [general, news], default: "general", description: "news cho tin tức; general cho thông tin chung. Giữ news khi lượt sau chỉ thay chủ đề."}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Hôm nay=day, tuần này=week, tháng này=month, năm nay=year. Giữ thời gian trước đó nếu người dùng chỉ đổi chủ đề."}
         max_results: {type: integer, default: 5, description: "Số kết quả"}
       required: [query]
 
@@ -108,7 +108,7 @@ tools:
 
   # ---------------- Bonus tools ----------------
   - name: send
-    description: "Gửi một đoạn văn bản đi."
+    description: "Gửi nội dung đã được người dùng duyệt lên Telegram. Chỉ gọi khi đã có chính xác nội dung và xác nhận gửi nội dung đó. Nếu chưa xác nhận, gọi clarify với response_type=yes_no; không tự đặt confirmed=true."
     parameters:
       type: object
       properties:
