@@ -201,16 +201,23 @@ tools:
               summary: {type: string, description: "Nội dung tóm tắt của nguồn."}
       required: [items]
 
+  
   - name: trending_on_X
-      description: "Lấy danh sách chủ đề/hashtag đang trending trên X ngay lúc này tại MỘT khu vực (mặc định Việt Nam). Kết quả chỉ gồm thứ hạng, tên trend, lượng bài (có thể trống) và link tìm kiếm trên X; KHÔNG có nội dung bài đăng. Dùng khi: người dùng hỏi đang có gì hot, xu hướng, trend trên X/Twitter/mạng xã hội mà chưa đưa từ khóa cụ thể. Không dùng khi: người dùng đã có từ khóa, chủ đề hoặc tài khoản cụ thể, hỏi tin tức chung như \"tin hôm nay\", hoặc hỏi xu hướng của một lĩnh vực/khoảng thời gian như \"xu hướng thời trang tháng 10\". Không đoán nội dung trend từ tên của nó. Nếu kết quả có trường error thì báo lỗi cho người dùng, không bịa trend và không gọi lại y hệt."
-      parameters:
-        type: object
-        properties:
-          location:
-            type: string
-            enum: [vietnam, worldwide, us, uk, japan, korea, singapore, thailand, india]
-            default: "vietnam"
-            description: "Khu vực lấy trend. Người dùng không nói khu vực thì để mặc định vietnam, không hỏi lại. Quy đổi: \"toàn cầu\"/\"thế giới\"/\"global\" -> worldwide; Mỹ -> us; Anh -> uk; Nhật Bản -> japan; Hàn Quốc -> korea; Singapore -> singapore; Thái Lan -> thailand; Ấn Độ -> india. Chỉ có các giá trị này; nước khác thì không tự thay bằng nước gần giống."
-          limit: {type: integer, default: 10, description: "Số trend cần lấy, số nguyên từ 1 đến 50. Giữ đúng số người dùng yêu cầu; không nói thì dùng mặc định 10. Yêu cầu hơn 50 thì truyền 50 và báo tối đa là 50. Truyền số nguyên (5), không truyền chuỗi (\"5\")."}
-          contains: {type: string, default: "", description: "Chỉ giữ các trend có chứa chuỗi này (không phân biệt hoa thường), ví dụ \"ai\". Để trống nếu người dùng không yêu cầu lọc. Bộ lọc chạy trên tối đa 50 trend của khu vực rồi mới cắt theo limit, nên có thể trả về ít hơn limit hoặc rỗng."}
-        required: []
+    description: "Lấy danh sách chủ đề/hashtag đang trending trên X tại một khu vực. Dùng khi người dùng hỏi về các trend đang hot trên X/Twitter mà không cung cấp từ khóa, chủ đề hoặc tài khoản cụ thể. Không dùng khi người dùng đã chỉ định chủ đề/từ khóa, hỏi tin tức chung hoặc xu hướng của một lĩnh vực trong khoảng thời gian cụ thể. Nếu không nêu khu vực, mặc định là Việt Nam. Kết quả chỉ gồm thứ hạng, tên trend, lượng bài (có thể trống) và link tìm kiếm trên X, không bao gồm nội dung bài đăng. Không suy đoán nội dung trend từ tên. Nếu tool trả về lỗi, thông báo lỗi cho người dùng, không bịa dữ liệu hoặc gọi lại y hệt."
+    parameters:
+      type: object
+      properties:
+        location:
+          type: string
+          enum: [vietnam, worldwide, us, uk, japan, korea, singapore, thailand, india]
+          default: "vietnam"
+          description: "Khu vực lấy trending. Quy đổi: toàn cầu/thế giới/global -> worldwide; Mỹ -> us; Anh -> uk; Nhật Bản -> japan; Hàn Quốc -> korea; Singapore -> singapore; Thái Lan -> thailand; Ấn Độ -> india. Chỉ sử dụng các giá trị trong enum, không tự thay thế quốc gia khác bằng quốc gia gần giống."
+        limit:
+          type: integer
+          default: 10
+          description: "Số lượng trend tối đa cần lấy, từ 1 đến 50. Giữ đúng số lượng người dùng yêu cầu; nếu không nêu thì mặc định 10. Nếu yêu cầu trên 50, truyền 50 và thông báo giới hạn. Phải truyền số nguyên, không truyền chuỗi."
+        contains:
+          type: string
+          default: ""
+          description: "Lọc trend có chứa chuỗi được chỉ định, không phân biệt chữ hoa/thường. Để trống nếu không yêu cầu lọc. Bộ lọc áp dụng trên tối đa 50 trend của khu vực trước khi giới hạn kết quả, do đó kết quả có thể ít hơn limit hoặc rỗng."
+      required: []
