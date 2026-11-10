@@ -31,18 +31,74 @@ def test_clarify_choice_returns_options_and_awaits_user() -> None:
 # ---------------- format ----------------
 
 def test_format_sections_groups_items_by_section() -> None:
-    # Items with section "A", "B", "A" -> markdown has exactly one "## A" and one "## B".
-    pytest.skip(TODO)
+    """
+    Items with section "A", "B", "A" -> markdown has exactly one "## A" and one "## B".
+    Items with same section are grouped under one header.
+    """
+    items = [
+        {"title": "Item 1", "section": "A", "url": "https://a.com/1"},
+        {"title": "Item 2", "section": "B", "url": "https://b.com/2"},
+        {"title": "Item 3", "section": "A", "url": "https://a.com/3"},
+    ]
+    result = TOOL_FUNCTIONS["format"](items=items, template="sections")
+
+    markdown = result["markdown"]
+    # Exactly one header per section
+    assert markdown.count("## A") == 1
+    assert markdown.count("## B") == 1
+    # item_count reflects total items
+    assert result["item_count"] == 3
+    # Items grouped correctly: A items before B header, B items after
+    a_pos = markdown.index("## A")
+    b_pos = markdown.index("## B")
+    item1_pos = markdown.index("Item 1")
+    item3_pos = markdown.index("Item 3")
+    item2_pos = markdown.index("Item 2")
+    assert a_pos < item1_pos < item3_pos < b_pos < item2_pos
 
 
 def test_format_thread_numbers_items() -> None:
-    # template="thread" -> lines start with "1/", "2/", ...
-    pytest.skip(TODO)
+    """
+    template="thread" -> lines start with "1/", "2/", "3/"...
+    No markdown headers, just numbered list.
+    """
+    items = [
+        {"title": "First", "url": "https://a.com/1"},
+        {"title": "Second", "url": "https://b.com/2"},
+        {"title": "Third", "url": "https://c.com/3"},
+    ]
+    result = TOOL_FUNCTIONS["format"](items=items, template="thread")
+
+    markdown = result["markdown"]
+    # Each line starts with number/
+    assert markdown.strip().startswith("1/ ")
+    assert "2/ " in markdown
+    assert "3/ " in markdown
+    assert result["item_count"] == 3
+    # No markdown headers
+    assert "##" not in markdown
+    assert "# " not in markdown
 
 
 def test_format_empty_items_does_not_crash() -> None:
-    # items=None and items=[] -> item_count == 0, no exception.
-    pytest.skip(TODO)
+    """
+    items=None and items=[] -> item_count == 0, no exception.
+    Returns empty markdown or just headline depending on template.
+    """
+    # Case 1: items=None with sections template
+    result_none = TOOL_FUNCTIONS["format"](items=None, template="sections", headline="Test")
+    assert result_none["item_count"] == 0
+    assert result_none["markdown"] == "# Test\n"
+
+    # Case 2: items=[] with bullets template (no headline rendered for empty)
+    result_empty = TOOL_FUNCTIONS["format"](items=[], template="bullets", headline="Empty")
+    assert result_empty["item_count"] == 0
+    assert result_empty["markdown"] == ""
+
+    # Case 3: template=brief with items=None
+    result_brief = TOOL_FUNCTIONS["format"](items=None, template="brief", headline="Brief")
+    assert result_brief["item_count"] == 0
+    assert result_brief["markdown"] == "**Brief**\n\n"
 
 
 # ---------------- send (guardrail) ----------------
