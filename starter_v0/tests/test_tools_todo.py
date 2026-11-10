@@ -302,7 +302,7 @@ def test_timeline_reports_page_scope(monkeypatch, fake_http):
     pytest.skip(TODO)
 
 
-# ---------------- YOUR NEW TOOL(S) ----------------
+# ---------------- compare_sources ----------------
 
 def test_compare_sources_happy_path() -> None:
     items = [
@@ -342,3 +342,60 @@ def test_compare_sources_failure_returns_error_dict() -> None:
 
     assert isinstance(result, dict)
     assert "error" in result    
+
+# ---------------- trending_on_x ----------------
+    
+def test_trending_on_x_happy_path(monkeypatch, fake_http) -> None:
+    trending_tool = TOOL_FUNCTIONS["trending_on_X"]
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
+    monkeypatch.delenv("RAPIDAPI_HOST", raising=False)
+    monkeypatch.setenv("RAPIDAPI_KEY", "rk-test")
+    calls = fake_http(FakeResponse({"trends": [
+        {"name": "#AIVietnam", "tweet_volume": "12.5K"},
+        {"name": "Bóng đá", "tweet_volume": 3400},
+        {"name": "OpenAI"},
+    ]}))
+
+    result = trending_tool(location="vietnam", limit=2)
+
+    assert calls[0]["url"] == "https://twitter-api45.p.rapidapi.com/trends.php"
+    assert calls[0]["params"] == {"country": "Vietnam"}
+    assert calls[0]["headers"]["x-rapidapi-key"] == "rk-test"
+    assert result["item_count"] == 2
+    assert result["items"][0]["rank"] == 1
+    assert result["items"][0]["title"] == "#AIVietnam"
+    assert result["items"][0]["volume"] == 12500
+    assert result["items"][0]["url"] == "https://x.com/search?q=%23AIVietnam"
+
+
+def test_trending_on_x_bad_input_from_model(monkeypatch, fake_http) -> None:
+    trending_tool = TOOL_FUNCTIONS["trending_on_X"]
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)  
+    monkeypatch.delenv("RAPIDAPI_HOST", raising=False)
+    monkeypatch.setenv("RAPIDAPI_KEY", "rk-test")
+    calls = fake_http(FakeResponse({"trends": [{"name": "AI"}]}))
+
+    result = trending_tool(location="mars")
+    assert "không hỗ trợ" in result["error"]
+    assert calls == []
+
+    assert trending_tool(location=123)["items"] == []
+    assert trending_tool(limit="abc", contains=5)["item_count"] == 0
+    assert trending_tool(limit="1")["item_count"] == 1
+
+
+def test_trending_on_x_failure_returns_error_dict(monkeypatch, fake_http) -> None:
+    trending_tool = TOOL_FUNCTIONS["trending_on_X"]
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)  
+    monkeypatch.delenv("RAPIDAPI_HOST", raising=False)
+    
+    calls = fake_http(FakeResponse({}))
+    assert "RAPIDAPI_KEY" in trending_tool()["error"]
+    assert calls == []
+
+    monkeypatch.setenv("RAPIDAPI_KEY", "rk-test")
+    fake_http(FakeResponse(status_code=429))
+    result = trending_tool()
+    assert result["error"]
+    assert result["items"] == []
+    
