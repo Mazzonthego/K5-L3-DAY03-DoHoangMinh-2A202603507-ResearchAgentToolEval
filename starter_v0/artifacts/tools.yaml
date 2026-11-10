@@ -119,6 +119,34 @@ tools:
       required: [items, template]
 
   # ---------------- Bonus tools ----------------
+  - name: rank_by_engagement
+    description: "Sắp xếp các bài đã có theo lượt thích, chia sẻ hoặc xem. Lấy một mẫu bài trước khi xếp hạng; kết quả chỉ áp dụng cho bài đã lấy, không đại diện toàn bộ lịch sử tài khoản."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          description: "Danh sách bài và metrics từ timeline hoặc social_search."
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              summary: {type: string}
+              url: {type: string}
+              source: {type: string}
+              date: {type: string}
+              is_retweet: {type: boolean}
+              metrics_scope: {type: string}
+              metrics:
+                type: object
+                properties:
+                  favorites: {description: "Lượt thích dạng số, chuỗi số hoặc null."}
+                  retweets: {description: "Lượt chia sẻ dạng số, chuỗi số hoặc null."}
+                  views: {description: "Lượt xem dạng số, chuỗi số hoặc null."}
+        metric: {type: string, enum: [favorites, retweets, views], default: favorites}
+        limit: {type: integer, minimum: 1, description: "Số kết quả tối đa sau khi xếp hạng."}
+      required: [items]
+
   - name: send
     description: "Gửi một đoạn văn bản đi."
     parameters:
