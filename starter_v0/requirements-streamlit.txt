@@ -1,0 +1,4 @@
+# The lab itself:
+-r requirements.txt
+# The demo UI (starter_v0/app.py):
+streamlit>=1.50
