@@ -21,9 +21,11 @@ TODO = "TODO(student): implement this test"
 # ---------------- clarify ----------------
 
 def test_clarify_choice_returns_options_and_awaits_user() -> None:
-    # Call clarify with response_type="choice" and 2 options.
-    # Assert: options are returned unchanged, awaiting_user is True.
-    pytest.skip(TODO)
+    options = ["Tài khoản A", "Tài khoản B"]
+    result = TOOL_FUNCTIONS["clarify"]("Bạn chọn tài khoản nào?", "choice", options)
+    assert result["options"] == options
+    assert result["awaiting_user"] is True
+    assert result["response_type"] == "choice"
 
 
 # ---------------- format ----------------
@@ -77,9 +79,17 @@ def test_fetch_truncates_markdown_to_4000_chars(monkeypatch, fake_http) -> None:
 # ---------------- timeline / social_search ----------------
 
 def test_timeline_respects_limit_and_skips_items_without_id(monkeypatch, fake_http) -> None:
-    # Mock {"timeline": [...]} with 1 item missing tweet_id and 6 valid items, limit=3.
-    # Assert 3 items, and each url looks like https://x.com/<handle>/status/<id>.
-    pytest.skip(TODO)
+    monkeypatch.setenv("RAPIDAPI_KEY", "test-key")
+    calls = fake_http(FakeResponse({"timeline": [
+        {"text": "No ID"}, None,
+        *[{"tweet_id": str(i), "screen_name": "example", "text": f"Post {i}"} for i in range(1, 7)],
+    ]}))
+    result = TOOL_FUNCTIONS["timeline"]("example", limit=3)
+    assert [item["url"] for item in result["items"]] == [
+        f"https://x.com/example/status/{i}" for i in range(1, 4)
+    ]
+    assert len(calls) == 1
+    assert calls[0]["params"] == {"screenname": "example"}
 
 
 def test_social_search_passes_search_type(monkeypatch, fake_http) -> None:
