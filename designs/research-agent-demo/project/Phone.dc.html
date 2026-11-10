@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Research Agent — điện thoại</title>
+<script src="./support.js"></script>
+</head>
+<body style="margin: 0; background: #F5F7FA; font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; color: #12171F">
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#0B4F8A}a:hover{color:#083A66}
+textarea{font-family:inherit}
+textarea::placeholder{color:#6B7785}
+.scn{display:flex;align-items:center;gap:10px;width:100%;border:1px solid #D6DDE6;border-radius:10px;padding:10px;background:#FFFFFF;min-height:44px;text-align:left;cursor:pointer;font-family:inherit}
+.scn:hover{border-color:#0B4F8A;background:#F5F9FD}
+.scn[aria-pressed="true"]{border-color:#0B4F8A;background:#E8F0F8}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:0;border-radius:8px;background:#0B4F8A;color:#FFFFFF;font:600 14px Inter, system-ui, sans-serif;cursor:pointer}
+.btn-primary:hover{background:#083A66}
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 16px;border:1px solid #C3CCD8;border-radius:8px;background:#FFFFFF;color:#25303D;font:600 14px Inter, system-ui, sans-serif;cursor:pointer}
+.btn-secondary:hover{background:#EDF1F6}
+.toolrow{display:flex;flex-direction:column;width:100%;text-align:left;background:#FFFFFF;border:1px solid #DFE5EC;border-radius:10px;padding:12px 14px;min-height:44px;cursor:pointer;font-family:inherit}
+.toolrow:hover{border-color:#9FB3C8;background:#F9FBFD}
+.toolrow[aria-expanded="true"]{border-color:#0B4F8A}
+.chip{border:1px solid #D6DDE6;border-radius:999px;background:#FFFFFF;color:#25303D;font:500 12px Inter, system-ui, sans-serif;padding:0 12px;height:32px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.chip:hover{border-color:#0B4F8A}
+.chip[aria-pressed="true"]{background:#0E1621;border-color:#0E1621;color:#FFFFFF}
+</style>
+</helmet>
+
+<div style="box-sizing: border-box; background: #F5F7FA; display: flex; flex-direction: column; flex-wrap: nowrap; min-height: 844px">
+
+  <!-- App bar -->
+  <header style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; padding: 14px 16px 12px; background: #0E1621; color: #E8EDF3">
+    <div style="width: 32px; height: 32px; border-radius: 8px; background: #F28B3C; display: flex; align-items: center; justify-content: center">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#141413" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+      <span style="font: 600 14px Inter, system-ui, sans-serif; color: #FFFFFF">Research Agent</span>
+      <span style="font: 400 11px Inter, system-ui, sans-serif; color: #8A98A9">{{version}} · deepseek-v4-flash</span>
+    </div>
+    <button type="button" onClick="{{newChat}}" style="margin-left: auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #1D2938; color: #E8EDF3; cursor: pointer" aria-label="Cuộc trò chuyện mới">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </header>
+
+  <!-- Tabs -->
+  <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 4px; padding: 6px; background: #FFFFFF; border-bottom: 1px solid #DFE5EC">
+    <a href="#chat" onClick="{{goChat}}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: 8px; text-decoration: none; font: 600 13px Inter, system-ui, sans-serif; color: {{chatFg}}; background: {{chatBg}}">Trò chuyện</a>
+    <a href="#tools" onClick="{{goTools}}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: 8px; text-decoration: none; font: 600 13px Inter, system-ui, sans-serif; color: {{toolsFg}}; background: {{toolsBg}}">Tool · 10</a>
+    <a href="#eval" onClick="{{goEval}}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; height: 44px; border-radius: 8px; text-decoration: none; font: 600 13px Inter, system-ui, sans-serif; color: {{evalFg}}; background: {{evalBg}}">Eval</a>
+  </div>
+
+  <sc-if value="{{chatOpen}}">
+    <section aria-label="Trò chuyện" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 16px; padding: 16px 16px 24px">
+      <sc-if value="{{empty}}">
+        <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px">
+          <h1 style="margin: 0; font: 600 20px/1.3 Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: #12171F">Hôm nay bạn muốn tìm gì?</h1>
+          <p style="margin: 0; font: 400 13px/1.55 Inter, system-ui, sans-serif; color: #4A5666">Agent sẽ chọn tool, chạy thật và hiện từng bước. Mỗi câu mẫu kiểm tra một hành vi khác nhau.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{userSent}}">
+        <div style="align-self: flex-end; max-width: 88%; display: flex; flex-direction: column; gap: 4px">
+          <span style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676; text-align: right">Bạn</span>
+          <div style="background: #0B4F8A; color: #FFFFFF; border-radius: 12px 12px 4px 12px; padding: 10px 13px; font: 400 14px/1.5 Inter, system-ui, sans-serif">{{sentText}}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{hasAnswer}}">
+        <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px">
+          <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px">
+            <div style="width: 22px; height: 22px; border-radius: 6px; background: #F28B3C; display: flex; align-items: center; justify-content: center">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#141413" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <span style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Research Agent</span>
+            <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">{{answerMeta}}</span>
+          </div>
+
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{answerSteps}}" as="st">
+              <li>
+                <button type="button" class="toolrow" aria-expanded="{{st.open}}" onClick="{{st.toggle}}">
+                  <span style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px; width: 100%">
+                    <span style="display: inline-flex; align-items: center; gap: 4px; font: 600 10px Inter, system-ui, sans-serif; color: #176B4A; background: #E4F4EC; border-radius: 4px; padding: 2px 6px; flex: 0 0 auto">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-9"/></svg>
+                      OK
+                    </span>
+                    <span style="font: 600 13px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{st.name}}</span>
+                    <span style="margin-left: auto; font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #5A6676">{{st.ms}} ms</span>
+                  </span>
+                  <span style="display: block; font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #25303D; text-align: left; margin-top: 4px; overflow-wrap: anywhere">{{st.args}}</span>
+                  <sc-if value="{{st.open}}">
+                    <span style="display: block; font: 400 12px/1.5 Inter, system-ui, sans-serif; color: #4A5666; text-align: left; margin-top: 6px; padding-top: 6px; border-top: 1px solid #EDF1F6">{{st.detail}}</span>
+                  </sc-if>
+                </button>
+              </li>
+            </sc-for>
+          </ol>
+
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px; padding: 14px; border: 1px solid #DFE5EC; border-radius: 10px; background: #FFFFFF">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px">
+              <span style="font: 600 14px Inter, system-ui, sans-serif; color: #12171F">Digest · {{answerTopic}}</span>
+              <span style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676">{{answerCount}} mục</span>
+            </div>
+            <sc-for list="{{answerItems}}" as="it">
+              <div style="display: flex; flex-direction: row; gap: 10px; align-items: flex-start">
+                <span style="flex: 0 0 18px; font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #5A6676">{{it.n}}</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="font: 500 13px/1.45 Inter, system-ui, sans-serif; color: #12171F">{{it.title}}</span>
+                  <a href="{{it.link}}" style="font: 400 11px Inter, system-ui, sans-serif; color: #0B4F8A; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere">{{it.source}}</a>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{hasClarify}}">
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px; padding: 14px; border: 1px solid #C9D6E4; border-radius: 10px; background: #EEF3F8">
+              <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font: 600 11px Inter, system-ui, sans-serif; color: #0B4F8A; background: #DCE8F3; border-radius: 4px; padding: 3px 7px">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-1M12 8v4"/></svg>
+                {{clarifyCount}} lựa chọn
+              </span>
+              <span style="font: 400 14px/1.55 Inter, system-ui, sans-serif; color: #12171F">{{clarifyQ}}</span>
+              <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 8px">
+                <sc-for list="{{clarifyOptions}}" as="op">
+                  <button type="button" class="scn" onClick="{{op.choose}}" aria-pressed="{{op.picked}}">
+                    <span style="width: 18px; height: 18px; border-radius: 999px; border: 2px solid {{op.ring}}; background: {{op.dotBg}}; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px">
+                      <sc-if value="{{op.picked}}">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="#FFFFFF"/></svg>
+                      </sc-if>
+                    </span>
+                    <span style="font: 500 13px/1.4 Inter, system-ui, sans-serif; color: #12171F">{{op.label}}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <button type="button" class="btn-secondary" onClick="{{cancelClarify}}">{{clarifyAction}}</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{hasGate}}">
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px; padding: 14px; border: 1px solid #F2C79C; border-radius: 10px; background: #FFF8F0">
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+                <span style="display: inline-flex; align-items: center; gap: 5px; font: 600 11px Inter, system-ui, sans-serif; color: #8A4A0C; background: #FDEBD8; border-radius: 999px; padding: 4px 9px">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                  Gửi ra ngoài
+                </span>
+              </div>
+              <span style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Đăng digest lên Telegram?</span>
+              <span style="font: 400 12px/1.5 Inter, system-ui, sans-serif; color: #4A5666">send chỉ chạy với confirmed=true. Kênh: <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #25303D">chat_id chưa cấu hình</code></span>
+              <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 8px">
+                <button type="button" class="btn-primary" onClick="{{confirmSend}}" style="background: {{confirmColor}}">{{confirmLabel}}</button>
+                <button type="button" class="btn-secondary" onClick="{{cancelSend}}">{{gateCancelLabel}}</button>
+              </div>
+              <span style="font: 500 12px Inter, system-ui, sans-serif; color: {{gateStatusColor}}">{{gateStatus}}</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- Composer -->
+      <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px; margin-top: 4px">
+        <label for="q" style="font: 500 12px Inter, system-ui, sans-serif; color: #4A5666">Câu hỏi cho agent</label>
+        <div style="position: relative; display: flex; flex-direction: column">
+          <textarea id="q" rows="2" onInput="{{setDraft}}" placeholder="Ví dụ: đọc bài này giúp mình" style="width: 100%; box-sizing: border-box; resize: none; min-height: 56px; border: 1px solid #C3CCD8; border-radius: 10px; padding: 10px 52px 10px 12px; font: 400 14px/1.5 Inter, system-ui, sans-serif; color: #12171F; background: #FFFFFF">{{draft}}</textarea>
+          <button type="button" onClick="{{submit}}" aria-label="Gửi câu hỏi" style="position: absolute; right: 6px; bottom: 6px; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #F28B3C; color: #1A1410; display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 8px">
+        <span style="font: 600 11px Inter, system-ui, sans-serif; color: #5A6676; text-transform: uppercase; letter-spacing: 0.06em">Câu hỏi mẫu</span>
+        <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px">
+          <sc-for list="{{samples}}" as="s">
+            <button type="button" class="chip" onClick="{{s.use}}">{{s.id}} · {{s.short}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{toolsOpen}}">
+    <section aria-label="Tool registry" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px; padding: 16px 16px 24px">
+      <h1 style="margin: 0; font: 600 20px Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: #12171F">10 tool</h1>
+      <p style="margin: 0; font: 400 13px/1.55 Inter, system-ui, sans-serif; color: #4A5666">Chạm một tool để xem arguments và khi nào nên gọi.</p>
+      <sc-for list="{{toolList}}" as="t">
+        <button type="button" class="toolrow" aria-expanded="{{t.open}}" onClick="{{t.toggle}}">
+          <span style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px">
+            <span style="font: 600 13px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{t.name}}</span>
+            <span style="font: 600 10px Inter, system-ui, sans-serif; border-radius: 4px; padding: 2px 6px; background: {{t.tagBg}}; color: {{t.tagFg}}">{{t.track}}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A6676" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto"><path d="{{t.caret}}"/></svg>
+          </span>
+          <span style="display: block; font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #25303D; text-align: left; margin-top: 3px; overflow-wrap: anywhere">{{t.args}}</span>
+          <sc-if value="{{t.open}}">
+            <span style="display: block; font: 400 12px/1.5 Inter, system-ui, sans-serif; color: #4A5666; text-align: left; margin-top: 6px; padding-top: 6px; border-top: 1px solid #EDF1F6">{{t.use}}</span>
+            <span style="display: block; font: 500 11px Inter, system-ui, sans-serif; color: #5A6676; text-align: left; margin-top: 4px">{{t.ext}}</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{evalOpen}}">
+    <section aria-label="Eval" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 14px; padding: 16px 16px 24px">
+      <h1 style="margin: 0; font: 600 20px Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: #12171F">Eval v{{version}}</h1>
+      <p style="margin: 0; font: 400 12px/1.55 Inter, system-ui, sans-serif; color: #4A5666">20 case · deepseek-v4-flash · run 10/11/2026</p>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{evalCards}}" as="m">
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px; padding: 12px; background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 10px">
+            <span style="font: 500 11px Inter, system-ui, sans-serif; color: #4A5666">{{m.label}}</span>
+            <span style="font: 600 24px Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: {{m.color}}">{{m.value}}</span>
+            <span style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676">{{m.raw}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 0; padding: 14px; background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 10px">
+        <span style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F; margin-bottom: 10px">8 case lỗi</span>
+        <sc-for list="{{evalFails}}" as="f">
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 3px; padding: 8px 0; border-top: 1px solid #EDF1F6">
+            <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px">
+              <code style="font: 600 11px ui-monospace, Menlo, Consolas, monospace; color: #9E2034; background: #FBE3E6; border-radius: 4px; padding: 2px 6px">{{f.id}}</code>
+              <span style="font: 500 11px Inter, system-ui, sans-serif; color: #25303D">{{f.actual}}</span>
+            </div>
+            <span style="font: 400 11px/1.45 Inter, system-ui, sans-serif; color: #4A5666">{{f.why}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"version":{"editor":"text","default":"v0"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const version = this.props.version ?? 'v0';
+    const tab = this.state.tab || 'chat';
+    const stepState = this.state.steps || {};
+    const picked = this.state.picked || null;
+    const sent = !!this.state.sent;
+    const clarified = !!this.state.clarified;
+    const gateOpen = !!this.state.gate || sent;
+    const sampleId = this.state.sampleId || '';
+    const showAnswer = clarified || sent;
+    const draft = this.state.draft ?? (sampleId ? this.samples()[sampleId].text : '');
+    const open = tab === 'chat' ? '#0E1621' : 'transparent';
+    const openFg = tab === 'chat' ? '#FFFFFF' : '#4A5666';
+    return {
+      version,
+      chatOpen: tab === 'chat',
+      toolsOpen: tab === 'tools',
+      evalOpen: tab === 'eval',
+      chatBg: open, chatFg: openFg,
+      toolsBg: tab === 'tools' ? '#0E1621' : 'transparent', toolsFg: tab === 'tools' ? '#FFFFFF' : '#4A5666',
+      evalBg: tab === 'eval' ? '#0E1621' : 'transparent', evalFg: tab === 'eval' ? '#FFFFFF' : '#4A5666',
+      goChat: (e) => { if (e) e.preventDefault(); this.setState({ tab: 'chat' }); },
+      goTools: (e) => { if (e) e.preventDefault(); this.setState({ tab: 'tools' }); },
+      goEval: (e) => { if (e) e.preventDefault(); this.setState({ tab: 'eval' }); },
+      newChat: () => this.setState({ sent: false, clarified: false, gate: false, picked: null, sampleId: '', draft: '', steps: {}, tab: 'chat' }),
+
+      empty: !showAnswer && !gateOpen,
+      userSent: showAnswer || gateOpen,
+      sentText: sampleId ? this.samples()[sampleId].text : (this.state.text || 'Đăng digest lên Telegram giúp mình'),
+      hasAnswer: showAnswer,
+      answerMeta: '3 tool · 1.6 s',
+      answerTopic: 'tin AI hôm nay',
+      answerCount: 3,
+      answerSteps: [
+        { name: 'lookup', args: 'query="AI", topic="news"', ms: 341, detail: '5 kết quả, 2 tin trong ngày.' },
+        { name: 'fetch', args: 'url="https://…"', ms: 1287, detail: 'Đọc bài, lấy link nguồn.' },
+        { name: 'format', args: 'template="sections"', ms: 3, detail: 'Ghép digest + link.' }
+      ].map((s, i) => ({ ...s, open: !!stepState[i], toggle: () => this.setState({ steps: { ...stepState, [i]: !stepState[i] } }) })),
+      answerItems: [
+        { n: '01', title: 'Google công bố Gemini mới', source: 'https://www.theverge.com/', link: 'https://www.theverge.com/' },
+        { n: '02', title: 'OpenAI ra mắt tính năng doanh nghiệp', source: 'https://openai.com/news/', link: 'https://openai.com/news/' },
+        { n: '03', title: 'Nghiên cứu diffusion trên arXiv', source: 'https://arxiv.org/', link: 'https://arxiv.org/' }
+      ],
+      hasClarify: clarified && !sent,
+      clarifyCount: 3,
+      clarifyQ: 'Gửi digest này lên kênh Telegram nào?',
+      clarifyOptions: ['#team-ai-digest', 'Chat riêng của mình', 'Để sau, mình tự chuyển'].map((label, i) => ({
+        label,
+        picked: picked === i,
+        ring: picked === i ? '#0B4F8A' : '#9FB3C8',
+        dotBg: picked === i ? '#0B4F8A' : '#FFFFFF',
+        choose: () => this.setState({ picked: i })
+      })),
+      clarifyAction: picked === null ? 'Bỏ qua, chưa gửi' : 'Dùng lựa chọn này',
+      cancelClarify: () => this.setState({ clarified: false }),
+
+      hasGate: gateOpen && !clarified,
+      confirmLabel: sent ? 'Đã gửi' : 'Xác nhận gửi',
+      gateCancelLabel: 'Huỷ',
+      confirmColor: sent ? '#176B4A' : '#0B4F8A',
+      gateStatus: sent ? 'Đã đăng lên Telegram. Xong.' : 'Chưa gửi. Bạn có thể sửa digest trước.',
+      gateStatusColor: sent ? '#176B4A' : '#8A4A0C',
+      confirmSend: () => this.setState({ sent: true, gate: true }),
+      cancelSend: () => this.setState({ gate: false }),
+
+      draft,
+      setDraft: (e) => this.setState({ draft: e && e.target ? e.target.value : '' }),
+      submit: () => {
+        const text = (this.state.draft || '').trim();
+        if (!text) return;
+        if (/telegram|đăng|gửi/i.test(text)) this.setState({ gate: true, sent: false, text });
+        else if (/gần đây|tài khoản/i.test(text)) this.setState({ clarified: true, text });
+        else this.setState({ sampleId: sampleId || 'R03', text, clarified: true });
+      },
+      samples: {}, // overwritten below
+      toolList: [
+        { name: 'clarify', args: 'question, response_type, options', use: 'Hỏi lại khi thiếu handle, URL hoặc kênh.', ext: 'không gọi mạng' },
+        { name: 'timeline', args: 'screenname, limit=5', use: 'Bài đăng gần đây của một tài khoản.', ext: 'X API' },
+        { name: 'social_search', args: 'query, search_type, limit', use: 'Tìm bài đăng theo từ khoá.', ext: 'X API' },
+        { name: 'lookup', args: 'query, topic, timeframe, max_results', use: 'Tìm web; tin tức dùng topic=news.', ext: 'Tavily' },
+        { name: 'fetch', args: 'url', use: 'Đọc nội dung một URL.', ext: 'Firecrawl' },
+        { name: 'format', args: 'items, template, headline', use: 'Ghép item thành digest.', ext: 'local' },
+        { name: 'send', args: 'text, confirmed=false', use: 'Gửi Telegram khi confirmed=true.', ext: 'Telegram' },
+        { name: 'policy', args: 'query, policy_area, top_k', use: 'Tra company policy.', ext: 'local KB' },
+        { name: 'papers', args: 'query, max_results, sort_by', use: 'Tìm paper arXiv.', ext: 'arXiv' },
+        { name: 'paper_text', args: 'arxiv_url, max_pages, max_chars', use: 'Trích text PDF.', ext: 'arXiv PDF' }
+      ].map((t, i) => ({ ...t, track: i < 6 ? 'core' : 'bonus', open: !!stepState['t' + i],
+        tagBg: i < 6 ? '#E8F0F8' : '#FDEBD8', tagFg: i < 6 ? '#0B4F8A' : '#8A4A0C',
+        caret: stepState['t' + i] ? 'm6 15 6-6 6 6' : 'm9 6 6 6-6 6',
+        toggle: () => this.setState({ steps: { ...stepState, ['t' + i]: !stepState['t' + i] } }) })),
+      evalCards: [
+        { label: 'Case accuracy', value: '0.600', raw: '12/20', color: '#8A4A0C' },
+        { label: 'Tool routing', value: '0.800', raw: '16/20', color: '#0B4F8A' },
+        { label: 'Argument', value: '0.600', raw: '12/20', color: '#8A4A0C' },
+        { label: 'Multi-turn', value: '0.667', raw: '2/3', color: '#8A4A0C' }
+      ],
+      evalFails: [
+        { id: 'R10', actual: 'timeline', why: 'Thiếu tài khoản, đáng ra clarify.' },
+        { id: 'R12', actual: 'send', why: 'Gửi khi chưa xác nhận.' },
+        { id: 'R03', actual: 'lookup', why: 'query sai; thiếu topic="news".' }
+      ]
+    };
+  }
+  samples() {
+    return {
+      R03: { text: 'Tìm tin tức mới nhất về "AI" trong tuần này', short: 'Tin AI tuần này' },
+      R10: { text: 'Cho mình xem bài đăng gần đây', short: 'Bài đăng gần đây' },
+      R12: { text: 'Đăng bản tin này lên Telegram', short: 'Đăng Telegram' },
+      E04: { text: 'Tìm paper về diffusion model trên arXiv', short: 'Paper arXiv' }
+    };
+  }
+  render() {
+    const v = this.renderVals();
+    v.samples = Object.keys(this.samples()).map((id) => ({ id, short: this.samples()[id].short, use: () => this.setState({ sampleId: id, draft: this.samples()[id].text, tab: 'chat' }) }));
+    return super.render(v);
+  }
+}
+</script>
+</body>
+</html>

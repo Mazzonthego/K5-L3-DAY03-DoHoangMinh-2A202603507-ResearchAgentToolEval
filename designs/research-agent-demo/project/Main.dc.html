@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Agent Console — Research Agent demo</title>
+<script src="./support.js"></script>
+</head>
+<body style="margin: 0; background: #F5F7FA; font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; color: #12171F">
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#0B4F8A}a:hover{color:#083A66}
+input::placeholder{color:#6B7785}
+.navitem{color:#B4C0CF; text-decoration:none; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; font-size:14px}
+.navitem:hover{background:#1D2938; color:#fff}
+.chip{display:block; width:100%; height:100%; border:1px solid transparent; border-radius:999px; background:#FFFFFF1A; color:#E8EDF3; font:500 13px Inter, system-ui, sans-serif; margin:0; padding:0}
+.chip:hover{background:#FFFFFF2E}
+.sugg{display:flex; align-items:center; gap:12px; width:100%; text-align:left; background:#FFFFFF; border:1px solid #D6DDE6; border-radius:10px; padding:12px 14px; height:44px; box-sizing:border-box; cursor:pointer; font-family:inherit}
+.sugg:hover{border-color:#0B4F8A; background:#F5F9FD}
+.sugg-id{font:600 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#5A6676; min-width:22px}
+.sugg-text{font:500 13px Inter, system-ui, sans-serif; color:#12171F; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.btn-primary{display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 18px; border:0; border-radius:8px; background:#0B4F8A; color:#FFFFFF; font:600 14px Inter, system-ui, sans-serif; cursor:pointer}
+.btn-primary:hover{background:#083A66}
+.btn-secondary{display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 18px; border:1px solid #C3CCD8; border-radius:8px; background:#FFFFFF; color:#25303D; font:600 14px Inter, system-ui, sans-serif; cursor:pointer}
+.btn-secondary:hover{background:#EDF1F6}
+.btn-ghost{display:inline-flex; align-items:center; gap:6px; height:44px; padding:0 12px; border:0; border-radius:8px; background:transparent; color:#0B4F8A; font:600 13px Inter, system-ui, sans-serif; cursor:pointer}
+.btn-ghost:hover{background:#E8F0F8}
+.icon-btn{display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border:0; border-radius:8px; background:transparent; cursor:pointer; color:#FFFFFF}
+.icon-btn:hover{background:#1D2938}
+.btn-send{width:40px; height:40px; border:0; border-radius:8px; background:#F28B3C; color:#1A1410; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; position:absolute; right:8px; bottom:8px}
+.btn-send:hover{background:#E07A29}
+textarea{font-family:inherit}
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #F5F7FA; display: flex; flex-direction: row; flex-wrap: wrap; gap: 0; align-items: stretch">
+
+  <!-- ===== Sidebar ===== -->
+  <aside style="flex: 0 0 280px; box-sizing: border-box; background: #0E1621; color: #E8EDF3; padding: 24px 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 24px">
+    <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 12px; padding: 0 4px">
+      <div style="width: 36px; height: 36px; border-radius: 8px; background: #F28B3C; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#141413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font: 600 14px Inter, system-ui, sans-serif; color: #FFFFFF; letter-spacing: -0.01em">Research Agent</div>
+        <div style="font: 400 12px Inter, system-ui, sans-serif; color: #8A98A9">K5 · Day 03 Lab v2</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #16202D; border: 1px solid #233041">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#23A36D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+        <div style="font: 600 12px Inter, system-ui, sans-serif; color: #E8EDF3">VietAPI</div>
+        <div style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #8A98A9">deepseek-v4-flash</div>
+      </div>
+    </div>
+
+    <nav aria-label="Điều hướng" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px">
+      <button type="button" class="btn-ghost" style="justify-content: flex-start; padding-left: 12px; margin-bottom: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Cuộc trò chuyện mới</button>
+      <a href="#" class="navitem" aria-current="page" style="background: #1D2938; color: #FFFFFF">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Console
+      </a>
+      <a href="#tools" class="navitem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Tool registry
+      </a>
+      <a href="#eval" class="navitem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>
+        Eval
+      </a>
+      <button type="button" class="navitem" style="background: transparent; border: 0; width: 100%; text-align: left; cursor: pointer; font-family: inherit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M16 4v16"/></svg>
+        Slide deck
+      </button>
+      <a href="#policy" class="navitem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        Company policy
+      </a>
+    </nav>
+
+    <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px">
+      <div style="font: 600 11px Inter, system-ui, sans-serif; color: #6F7D8E; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px">Phiên gần đây</div>
+      <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px">
+        <a href="#" style="display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: inherit">
+          <span style="font: 500 13px Inter, system-ui, sans-serif; color: #C7D1DD; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Tin AI hôm nay — digest Telegram</span>
+          <span style="font: 400 11px Inter, system-ui, sans-serif; color: #6F7D8E">2 lượt · v0</span>
+        </a>
+        <a href="#" style="display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: inherit">
+          <span style="font: 500 13px Inter, system-ui, sans-serif; color: #C7D1DD; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Paper về diffusion model</span>
+          <span style="font: 400 11px Inter, system-ui, sans-serif; color: #6F7D8E">3 lượt · v0</span>
+        </a>
+        <a href="#" style="display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 8px; text-decoration: none; color: inherit">
+          <span style="font: 500 13px Inter, system-ui, sans-serif; color: #C7D1DD; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Bài đăng của Sam Altman</span>
+          <span style="font: 400 11px Inter, system-ui, sans-serif; color: #6F7D8E">2 lượt · v0</span>
+        </a>
+      </div>
+    </div>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px; padding-top: 16px; border-top: 1px solid #233041">
+      <button type="button" style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; background: transparent; border: 0; padding: 8px 4px; color: #8A98A9; font: 500 12px Inter, system-ui, sans-serif; cursor: pointer; text-align: left">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 7h3a5 5 0 0 1 0 10h-3M9 17H6a5 5 0 0 1 0-10h3M8 12h8"/></svg>
+        Mở link dùng thử
+      </button>
+      <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; padding: 8px 4px">
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #2B3B4F; color: #E8EDF3; display: flex; align-items: center; justify-content: center; font: 600 12px Inter, system-ui, sans-serif">DM</div>
+        <div style="display: flex; flex-direction: column; gap: 1px">
+          <div style="font: 500 12px Inter, system-ui, sans-serif; color: #C7D1DD">Đỗ Hoàng Minh</div>
+          <div style="font: 400 11px Inter, system-ui, sans-serif; color: #6F7D8E">2A202603507</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Main column ===== -->
+  <main style="flex: 999 1 600px; min-width: 0; box-sizing: border-box; padding: 28px 32px 40px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 20px; max-width: 1200px">
+
+    <!-- Header -->
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+        <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+          <span style="font: 500 11px Inter, system-ui, sans-serif; color: #4A5666; border: 1px solid #D6DDE6; border-radius: 4px; padding: 2px 6px; background: #FFFFFF">v{{version}}</span>
+          <span style="display: flex; flex-direction: row; align-items: center; gap: 5px; font: 500 11px Inter, system-ui, sans-serif; color: #176B4A"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><circle cx="4" cy="4" r="4" fill="#23A36D"/></svg>Provider sẵn sàng</span>
+          <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">prompt {{promptHash}} · tools {{toolsHash}}</span>
+        </div>
+        <h1 style="margin: 0; font: 600 26px Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: #12171F">Agent Console</h1>
+        <p style="margin: 0; font: 400 14px/1.5 Inter, system-ui, sans-serif; color: #4A5666; max-width: 640px">Hỏi bằng ngôn ngữ tự nhiên. Agent chọn tool, truyền arguments, chạy tool thật và trả lời kèm nguồn. Mọi lượt được ghi vào <code style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; background: #E8EDF3; padding: 1px 5px; border-radius: 4px; color: #25303D">transcripts/*.json</code>.</p>
+      </div>
+      <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px">
+        <button type="button" class="btn-secondary" style="padding: 0 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Reset</button>
+        <button type="button" class="btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Cuộc trò chuyện mới</button>
+      </div>
+    </div>
+
+    <!-- Workspace: chat card + context rail -->
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+
+      <!-- Chat card -->
+      <section aria-label="Trò chuyện với agent" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; box-shadow: 0 1px 2px #12171F0A, 0 4px 16px #12171F08; display: flex; flex-direction: column; flex-wrap: nowrap; overflow: hidden">
+
+        <!-- Thread -->
+        <div role="log" aria-live="polite" aria-label="Lịch sử trò chuyện" style="padding: 24px 24px 8px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 20px; height: 560px; overflow-y: auto">
+
+          <!-- User turn -->
+          <div style="display: flex; flex-direction: column; gap: 6px; align-self: flex-end; max-width: 86%">
+            <div style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676; text-align: right">Bạn · 11:45</div>
+            <div style="background: #0B4F8A; color: #FFFFFF; border-radius: 12px 12px 4px 12px; padding: 12px 14px; font: 400 14px/1.55 Inter, system-ui, sans-serif">Tìm tin AI hot trong ngày hôm nay và tóm tắt cho mình tầm 5 mục.</div>
+          </div>
+
+          <!-- Agent turn: tool trace (always visible) -->
+          <div style="display: flex; flex-direction: column; gap: 10px; align-self: flex-start; max-width: 100%; min-width: 0; width: 100%">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+              <div style="width: 24px; height: 24px; border-radius: 6px; background: #F28B3C; display: flex; align-items: center; justify-content: center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#141413" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="m21 21-4.3-4.3"/></svg>
+              </div>
+              <span style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Research Agent</span>
+              <span style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676">đọc run JSON: <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace">v0_B_base.json</code></span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 0; border: 1px solid #DFE5EC; border-radius: 10px; overflow: hidden; background: #FFFFFF">
+
+              <sc-for list="{{toolRows}}" as="row">
+                <div style="display: flex; flex-direction: row; align-items: flex-start; gap: 12px; padding: 12px 14px; border-top: 1px solid #EDF1F6; flex-wrap: wrap">
+                  <div style="flex: 0 0 84px; padding-top: 2px">
+                    <sc-if value="{{row.ok}}">
+                      <span style="display: inline-flex; align-items: center; gap: 5px; font: 600 11px Inter, system-ui, sans-serif; color: #176B4A; background: #E4F4EC; border-radius: 4px; padding: 3px 7px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-9"/></svg>
+                        {{row.label}}
+                      </span>
+                    </sc-if>
+                    <sc-if value="{{row.warn}}">
+                      <span style="display: inline-flex; align-items: center; gap: 5px; font: 600 11px Inter, system-ui, sans-serif; color: #8A4A0C; background: #FDEBD8; border-radius: 4px; padding: 3px 7px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>
+                        {{row.label}}
+                      </span>
+                    </sc-if>
+                    <sc-if value="{{row.bad}}">
+                      <span style="display: inline-flex; align-items: center; gap: 5px; font: 600 11px Inter, system-ui, sans-serif; color: #9E2034; background: #FBE3E6; border-radius: 4px; padding: 3px 7px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                        {{row.label}}
+                      </span>
+                    </sc-if>
+                  </div>
+                  <div style="flex: 999 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                    <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: baseline">
+                      <span style="font: 600 13px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{row.name}}</span>
+                      <span style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #25303D; background: #EDF1F6; border-radius: 4px; padding: 2px 6px; overflow-wrap: anywhere">{{row.args}}</span>
+                    </div>
+                    <div style="font: 400 12px/1.55 Inter, system-ui, sans-serif; color: #4A5666">{{row.detail}}</div>
+                  </div>
+                  <div style="flex: 0 0 auto; padding-top: 3px; font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #5A6676">{{row.ms}} ms</div>
+                </div>
+              </sc-for>
+
+            </div>
+
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; padding: 2px 2px 0">
+              <span style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676">{{roundCount}} tool call · {{totalMs}} ms · model <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #25303D">deepseek-v4-flash</code></span>
+              <button type="button" class="btn-ghost" style="height: 28px; padding: 0 8px; font-size: 12px">Xem run JSON</button>
+            </div>
+
+            <!-- Answer -->
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid #DFE5EC; border-radius: 10px; background: #F9FBFD">
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+                <div style="font: 600 14px Inter, system-ui, sans-serif; color: #12171F">Digest · tin AI hôm nay</div>
+                <span style="display: inline-flex; align-items: center; gap: 5px; font: 600 11px Inter, system-ui, sans-serif; color: #8A4A0C; background: #FDEBD8; border-radius: 4px; padding: 3px 7px">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                  topic=news chưa được gửi lên
+                </span>
+              </div>
+
+              <sc-for list="{{digest}}" as="item">
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 12px; align-items: flex-start">
+                  <span style="flex: 0 0 20px; font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #5A6676; padding-top: 2px">{{item.n}}</span>
+                  <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                    <div style="font: 500 14px/1.45 Inter, system-ui, sans-serif; color: #12171F">{{item.title}}</div>
+                    <a href="{{item.link}}" style="font: 400 12px Inter, system-ui, sans-serif; color: #0B4F8A; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere">{{item.source}}</a>
+                  </div>
+                </div>
+              </sc-for>
+
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; padding-top: 8px; border-top: 1px solid #DFE5EC">
+                <button type="button" class="btn-primary" style="height: 44px; padding: 0 16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/></svg>Gửi lên Telegram</button>
+                <button type="button" class="btn-secondary" style="height: 44px; padding: 0 16px">Xuất markdown</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- User turn 2 -->
+          <div style="display: flex; flex-direction: column; gap: 6px; align-self: flex-end; max-width: 86%">
+            <div style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676; text-align: right">Bạn · 11:47</div>
+            <div style="background: #0B4F8A; color: #FFFFFF; border-radius: 12px 12px 4px 12px; padding: 12px 14px; font: 400 14px/1.55 Inter, system-ui, sans-serif">Đăng bản tin này lên Telegram giúp mình nhé.</div>
+          </div>
+
+          <!-- Agent: send gate (interactive) -->
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 16px; padding: 18px; border: 1px solid #F2C79C; border-radius: 12px; background: #FFF8F0; align-self: stretch; max-width: 100%">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px">
+              <span style="display: inline-flex; align-items: center; gap: 7px; font: 600 12px Inter, system-ui, sans-serif; color: #8A4A0C; background: #FDEBD8; border-radius: 999px; padding: 5px 10px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                Cần xác nhận trước khi gửi
+              </span>
+              <span style="font: 400 13px Inter, system-ui, sans-serif; color: #4A5666">Tool <code style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #25303D">send</code> chỉ chạy khi <code style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #25303D">confirmed=true</code>.</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px; align-self: stretch">
+              <div style="font: 600 12px Inter, system-ui, sans-serif; color: #4A5666">Bản tin sẽ gửi tới</div>
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: center; font: 500 13px ui-monospace, Menlo, Consolas, monospace; color: #12171F">
+                <span style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 6px; padding: 6px 8px">chat_id</span>
+                <span style="color: #5A6676">chưa cấu hình trong .env</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 0; border: 1px solid #EEDCC8; border-radius: 8px; background: #FFFFFF; padding: 12px 14px; font: 400 13px/1.6 Inter, system-ui, sans-serif; color: #25303D; max-height: 180px; overflow-y: auto">
+              <div style="font: 600 12px Inter, system-ui, sans-serif; color: #12171F; margin-bottom: 4px">Digest · AI hôm nay</div>
+              <div>1. {{preview1}}</div>
+              <div>2. {{preview2}}</div>
+              <div>3. {{preview3}}</div>
+              <div style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676; margin-top: 4px">+ 2 mục khác</div>
+            </div>
+
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: center">
+              <button type="button" class="btn-primary" onClick="{{confirmSend}}" style="background: {{confirmColor}}" aria-describedby="send-hint">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/></svg>{{confirmLabel}}
+              </button>
+              <button type="button" class="btn-secondary" onClick="{{cancelSend}}">{{cancelLabel}}</button>
+              <button type="button" class="btn-ghost" onClick="{{editDigest}}" style="height: 44px">Sửa bản tin</button>
+            </div>
+            <div id="send-hint" style="font: 500 12px Inter, system-ui, sans-serif; color: {{statusColor}}">{{sendStatus}}</div>
+          </div>
+
+          <!-- Agent: clarified -->
+          <sc-if value="{{asked}}">
+            <div style="display: flex; flex-direction: column; gap: 6px; align-self: flex-start; max-width: 92%">
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+                <div style="width: 24px; height: 24px; border-radius: 6px; background: #F28B3C; display: flex; align-items: center; justify-content: center">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#141413" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="m21 21-4.3-4.3"/></svg>
+                </div>
+                <span style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Research Agent</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px; font: 500 11px Inter, system-ui, sans-serif; color: #176B4A; background: #E4F4EC; border-radius: 4px; padding: 3px 7px">clarify · chờ người dùng</span>
+              </div>
+              <div style="background: #F1F4F8; border-radius: 12px 12px 12px 4px; padding: 12px 14px; font: 400 14px/1.6 Inter, system-ui, sans-serif; color: #12171F">
+                Bạn muốn digest về chủ đề nào, và gửi lên kênh Telegram nào? Mình chưa thấy <code style="font: 500 12px ui-monospace, Menlo, Consolas, monospace">TELEGRAM_CHAT_ID</code> trong cấu hình.
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <!-- Composer -->
+        <div style="border-top: 1px solid #DFE5EC; padding: 12px 16px 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px; background: #FFFFFF">
+          <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; align-items: center">
+            <div style="display: flex; flex-direction: row; align-items: center; gap: 6px; font: 500 12px Inter, system-ui, sans-serif; color: #25303D; border: 1px solid #D6DDE6; border-radius: 999px; padding: 4px 10px 4px 4px">
+              <span style="width: 20px; height: 20px; border-radius: 999px; background: #0E1621; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font: 600 10px Inter, system-ui, sans-serif">VA</span>
+              vietapi · {{model}}
+            </div>
+            <label for="mode" style="font: 500 12px Inter, system-ui, sans-serif; color: #4A5666">Trace</label>
+            <select id="mode" style="height: 32px; border: 1px solid #D6DDE6; border-radius: 6px; background: #FFFFFF; font: 500 12px Inter, system-ui, sans-serif; color: #25303D; padding: 0 8px">
+              <option>Luôn hiện</option>
+              <option>Chỉ khi lỗi</option>
+              <option>Ẩn</option>
+            </select>
+          </div>
+
+          <div style="position: relative; display: flex; flex-direction: column; flex-wrap: nowrap">
+            <label for="prompt" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Câu hỏi cho agent</label>
+            <textarea id="prompt" rows="3" placeholder="Hỏi agent: tìm tin, đọc URL, tra paper, tóm tắt thành digest… (Enter để gửi, Shift+Enter xuống dòng)" style="width: 100%; box-sizing: border-box; resize: vertical; min-height: 88px; border: 1px solid #C3CCD8; border-radius: 10px; padding: 12px 56px 12px 14px; font: 400 14px/1.55 Inter, system-ui, sans-serif; color: #12171F; background: #FFFFFF; outline-color: #0B4F8A"></textarea>
+            <button type="button" class="btn-send" aria-label="Gửi câu hỏi">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            </button>
+          </div>
+
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 16px; align-items: center">
+            <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">max tool rounds {{maxRounds}} · temperature 0.0 · history window 5</span>
+            <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">Transcript sẽ lưu vào <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace">starter_v0/transcripts/</code></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Context rail -->
+      <aside style="flex: 1 1 300px; min-width: 280px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 16px">
+
+        <div style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px">
+          <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px">
+            <div style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Tool trong vòng này</div>
+            <span style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #4A5666; background: #EDF1F6; border-radius: 4px; padding: 2px 6px">{{toolCount}} đã chạy</span>
+          </div>
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 8px">
+            <sc-for list="{{railTools}}" as="t">
+              <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 8px; min-width: 0">
+                  <span style="width: 22px; height: 22px; border-radius: 5px; background: {{t.bg}}; color: {{t.fg}}; display: inline-flex; align-items: center; justify-content: center; font: 600 10px ui-monospace, Menlo, Consolas, monospace">{{t.initials}}</span>
+                  <span style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{t.name}}</span>
+                </div>
+                <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676; text-align: right">{{t.meta}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <a href="#tools" style="font: 600 12px Inter, system-ui, sans-serif; color: #0B4F8A; text-decoration: none; display: inline-flex; align-items: center; gap: 4px">Xem toàn bộ 10 tool<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+        </div>
+
+        <div style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px">
+          <div style="display: flex; flex-direction: row; align-items: center; gap: 8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A4A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg>
+            <div style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Policy check</div>
+            <span style="margin-left: auto; font: 500 11px Inter, system-ui, sans-serif; color: #8A4A0C; background: #FDEBD8; border-radius: 4px; padding: 2px 6px">1 vi phạm</span>
+          </div>
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px">
+            <div style="font: 600 12px Inter, system-ui, sans-serif; color: #25303D">source-citation-policy.md · §3</div>
+            <div style="font: 400 12px/1.55 Inter, system-ui, sans-serif; color: #4A5666">Digest không có link nguồn đầy đủ cho mục 4 và 5. Agent phải trích link gốc, không chỉ tên báo.</div>
+            <button type="button" class="btn-ghost" style="align-self: flex-start; height: 32px; padding: 0 8px; font-size: 12px">Bắt buộc trích nguồn trong prompt</button>
+          </div>
+        </div>
+
+        <div style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px">
+          <div style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Artifact version</div>
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 8px">
+            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px; font: 400 12px Inter, system-ui, sans-serif; color: #4A5666"><span>prompt_hash</span><code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{promptHash}}</code></div>
+            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px; font: 400 12px Inter, system-ui, sans-serif; color: #4A5666"><span>tools_hash</span><code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{toolsHash}}</code></div>
+            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px; font: 400 12px Inter, system-ui, sans-serif; color: #4A5666"><span>case_accuracy</span><code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace; color: #8A4A0C">{{accuracy}}</code></div>
+          </div>
+          <div style="font: 400 11px/1.5 Inter, system-ui, sans-serif; color: #5A6676">Bản {{version}} (baseline) vẫn còn 3 rule xấu trong system prompt: đoán thay vì hỏi, gửi ngay, ép một bước. Lỗi ở file sample bên dưới là bằng chứng.</div>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- ===== Sample questions ===== -->
+    <section aria-labelledby="samples" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px">
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="samples" style="margin: 0; font: 600 16px Inter, system-ui, sans-serif; color: #12171F">Câu hỏi mẫu để thử</h2>
+        <span style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676">21 case lấy từ <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace">eval_base.json</code> — mỗi câu kiểm tra một hành vi</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{suggestions}}" as="s">
+          <button type="button" class="sugg" onClick="{{s.pick}}" title="{{s.text}}">
+            <span class="sugg-id">{{s.id}}</span>
+            <span class="sugg-text">{{s.text}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ===== Tool registry ===== -->
+    <section id="tools" aria-labelledby="tools-h" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px; scroll-margin-top: 24px">
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="tools-h" style="margin: 0; font: 600 16px Inter, system-ui, sans-serif; color: #12171F">Tool registry</h2>
+        <span style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676">5 core · 5 bonus · mô tả lấy từ <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace">tools.yaml</code> (v0: mô tả mơ hồ)</span>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; overflow: hidden">
+        <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr) 200px; gap: 16px; padding: 10px 16px; border-bottom: 1px solid #DFE5EC; background: #F9FBFD">
+          <span style="font: 600 11px Inter, system-ui, sans-serif; color: #4A5666; text-transform: uppercase; letter-spacing: 0.05em">Tool</span>
+          <span style="font: 600 11px Inter, system-ui, sans-serif; color: #4A5666; text-transform: uppercase; letter-spacing: 0.05em">Arguments</span>
+          <span style="font: 600 11px Inter, system-ui, sans-serif; color: #4A5666; text-transform: uppercase; letter-spacing: 0.05em">Bên ngoài</span>
+        </div>
+        <sc-for list="{{tools}}" as="tool">
+          <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr) 200px; gap: 16px; padding: 12px 16px; border-bottom: 1px solid #EDF1F6; align-items: start">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px">
+              <span style="font: 600 13px ui-monospace, Menlo, Consolas, monospace; color: #12171F">{{tool.name}}</span>
+              <span style="font: 600 10px Inter, system-ui, sans-serif; border-radius: 4px; padding: 2px 6px; background: {{tool.tagBg}}; color: {{tool.tagFg}}">{{tool.track}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <div style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #25303D; overflow-wrap: anywhere">{{tool.args}}</div>
+              <div style="font: 400 12px/1.5 Inter, system-ui, sans-serif; color: #4A5666">{{tool.use}}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <div style="font: 500 12px Inter, system-ui, sans-serif; color: #25303D">{{tool.ext}}</div>
+              <div style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">{{tool.risk}}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- ===== Eval ===== -->
+    <section id="eval" aria-labelledby="eval-h" style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px; scroll-margin-top: 24px">
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="eval-h" style="margin: 0; font: 600 16px Inter, system-ui, sans-serif; color: #12171F">Eval · v{{version}}</h2>
+        <span style="font: 400 12px Inter, system-ui, sans-serif; color: #5A6676">run <code style="font: 500 11px ui-monospace, Menlo, Consolas, monospace">v0_B_base_openrouter_20261110T114550980812.json</code> · deepseek-v4-flash · 20 case</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: 12px">
+        <sc-for list="{{metrics}}" as="m">
+          <div style="background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px">
+            <div style="font: 500 12px Inter, system-ui, sans-serif; color: #4A5666">{{m.label}}</div>
+            <div style="display: flex; flex-direction: row; align-items: baseline; gap: 6px">
+              <span style="font: 600 28px Inter, system-ui, sans-serif; letter-spacing: -0.02em; color: {{m.color}}">{{m.value}}</span>
+            </div>
+            <div style="display: flex; flex-direction: row; align-items: center; gap: 6px">
+              <div style="flex: 1; height: 4px; border-radius: 999px; background: #EDF1F6; overflow: hidden"><div style="width: {{m.pct}}; height: 4px; border-radius: 999px; background: {{m.color}}"></div></div>
+              <span style="font: 500 11px Inter, system-ui, sans-serif; color: #5A6676">{{m.raw}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; align-items: stretch">
+        <div style="flex: 999 1 460px; min-width: 0; background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 12px">
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 8px">
+            <div style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Lỗi theo loại <span style="font-weight: 400; color: #5A6676">(8 case FAIL)</span></div>
+            <span style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676">failure_counts từ summary</span>
+          </div>
+          <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px">
+            <sc-for list="{{failures}}" as="f">
+              <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px">
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 8px">
+                  <span style="font: 500 12px ui-monospace, Menlo, Consolas, monospace; color: #25303D; flex: 0 0 150px">{{f.label}}</span>
+                  <div style="flex: 1; height: 8px; background: #EDF1F6; border-radius: 2px; overflow: hidden"><div style="width: {{f.pct}}; height: 8px; background: {{f.color}}; border-radius: 2px"></div></div>
+                  <span style="font: 600 12px Inter, system-ui, sans-serif; color: #25303D; flex: 0 0 16px; text-align: right">{{f.count}}</span>
+                </div>
+                <div style="font: 400 11px/1.45 Inter, system-ui, sans-serif; color: #5A6676; padding-left: 158px">{{f.note}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex: 1 1 320px; min-width: 280px; background: #FFFFFF; border: 1px solid #DFE5EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 10px">
+          <div style="font: 600 13px Inter, system-ui, sans-serif; color: #12171F">Case lỗi tiêu biểu</div>
+          <sc-for list="{{fails}}" as="c">
+            <div style="display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px; padding: 10px 0; border-top: 1px solid #EDF1F6">
+              <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px">
+                <code style="font: 600 11px ui-monospace, Menlo, Consolas, monospace; color: #9E2034; background: #FBE3E6; border-radius: 4px; padding: 2px 6px">{{c.id}}</code>
+                <span style="font: 500 11px Inter, system-ui, sans-serif; color: #25303D">{{c.actual}}</span>
+              </div>
+              <div style="font: 400 12px/1.5 Inter, system-ui, sans-serif; color: #4A5666">{{c.why}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <div style="font: 400 11px Inter, system-ui, sans-serif; color: #5A6676; padding-top: 4px">Mockup giao diện demo — số liệu eval lấy từ run v0 thật, phần trò chuyện là transcript mẫu minh hoạ luồng tool.</div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"version":{"editor":"text","default":"v0"},"model":{"editor":"text","default":"deepseek-v4-flash"},"promptHash":{"editor":"text","default":"6a1c0f2e"},"toolsHash":{"editor":"text","default":"b93d71aa"},"accuracy":{"editor":"text","default":"0.600"},"$preview":{"width":1440,"height":1650}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const hash = this.props.promptHash ?? '6a1c0f2e';
+    const version = this.props.version ?? 'v0';
+    const accuracy = this.props.accuracy ?? '0.600';
+    const sent = !!this.state.sent;
+    const cancelled = !!this.state.cancelled;
+    const asked = !!this.state.asked;
+    const bad = '#9E2034';
+    const steps = [
+      { label: 'OK', ok: true, name: 'lookup', args: 'query="AI news today", topic="general"', ms: 341, detail: 'Tavily trả 5 kết quả. Hai tin hôm nay: "Google công bố Gemini" và "OpenAI ra mắt tính năng mới".' },
+      { label: 'OK', ok: true, name: 'fetch', args: 'url="https://www.theverge.com/…"', ms: 1287, detail: 'Firecrawl đọc 1 bài, lấy tiêu đề, mô tả và ngày đăng làm nguồn trích dẫn.' },
+      { label: 'FAIL', bad: true, name: 'lookup', args: 'query="AI news today", topic="news"', ms: 412, detail: 'Model gửi thêm từ "news" vào query thay vì dùng topic="news" → argument_accuracy sai ở 4 case cùng kiểu.' },
+      { label: 'OK', ok: true, name: 'format', args: 'items=[5 items], template="sections", headline="Digest · tin AI hôm nay"', ms: 3, detail: 'Tool local, không gọi mạng. Trả markdown + 5 link nguồn.' }
+    ];
+    const previews = ['Google công bố Gemini — theverge.com', 'OpenAI ra mắt tính năng mới — openai.com', 'Nghiên cứu diffusion mới — arxiv.org'];
+    const suggestions = [
+      { id: 'R03', text: 'Tìm tin tức mới nhất về "AI" trong tuần này' },
+      { id: 'R10', text: 'Cho mình xem bài đăng gần đây' },
+      { id: 'R12', text: 'Đăng bản tin này lên Telegram' },
+      { id: 'R07', text: 'Chỉ lấy 5 tweet Latest về GPT-5' },
+      { id: 'E03', text: 'Theo policy công ty, gửi Telegram có cần duyệt không?' },
+      { id: 'E04', text: 'Tìm paper về diffusion model trên arXiv' }
+    ];
+    const tools = [
+      { name: 'clarify', track: 'core', args: 'question, response_type, options', use: 'Hỏi lại khi thiếu handle, URL hoặc kênh gửi. Lượt chạy dừng, chờ người dùng.', ext: '-', risk: '' },
+      { name: 'timeline', track: 'core', args: 'screenname, limit=5', use: 'Bài đăng gần đây của một tài khoản (không có @).', ext: 'X API · RapidAPI', risk: 'RapidAPI key' },
+      { name: 'social_search', track: 'core', args: 'query, search_type=Latest|Top, limit=5', use: 'Tìm bài đăng theo từ khoá; search_type quyết định Latest hay Top.', ext: 'X API · RapidAPI', risk: 'RapidAPI key' },
+      { name: 'lookup', track: 'core', args: 'query, topic=general|news, timeframe=week, max_results=5', use: 'Tìm trên web. Tin tức dùng topic=news, không nhét "news" vào query.', ext: 'Tavily', risk: 'TAVILY_API_KEY' },
+      { name: 'fetch', track: 'core', args: 'url', use: 'Đọc nội dung một URL. Không đoán URL khi user chưa đưa.', ext: 'Firecrawl', risk: 'FIRECRAWL_API_KEY' },
+      { name: 'format', track: 'core', args: 'items, template=sections, headline', use: 'Trình bày item đã có thành digest markdown. Không gọi mạng.', ext: 'local', risk: '' },
+      { name: 'send', track: 'bonus', args: 'text, confirmed=false', use: 'Gửi Telegram. Chỉ chạy khi confirmed=true sau khi user đồng ý.', ext: 'Telegram Bot API', risk: 'action: gửi ra ngoài' },
+      { name: 'policy', track: 'bonus', args: 'query, policy_area=all, top_k=3', use: 'Tìm trong company_policy/*.md; tách phần "trusted facts" khỏi nội dung chưa kiểm chứng.', ext: 'local KB', risk: '' },
+      { name: 'papers', track: 'bonus', args: 'query, max_results=5, sort_by=relevance', use: 'Tìm paper arXiv, trả id, tiêu đề, tác giả, abstract.', ext: 'arXiv API', risk: 'rate limit 3s' },
+      { name: 'paper_text', track: 'bonus', args: 'arxiv_url, max_pages=5, max_chars=8000', use: 'Tải PDF arXiv và trích text cục bộ (pypdf).', ext: 'arXiv PDF', risk: 'tải file lớn' }
+    ].map(t => ({ ...t, tagBg: t.track === 'core' ? '#E8F0F8' : '#FDEBD8', tagFg: t.track === 'core' ? '#0B4F8A' : '#8A4A0C' }));
+    const metrics = [
+      { label: 'Case accuracy', value: accuracy, raw: '12/20', pct: '60%', color: '#8A4A0C' },
+      { label: 'Tool routing', value: '0.800', raw: '16/20', pct: '80%', color: '#0B4F8A' },
+      { label: 'Argument', value: '0.600', raw: '12/20', pct: '60%', color: '#8A4A0C' },
+      { label: 'Multi-turn', value: '0.667', raw: '≈ 2/3', pct: '66.7%', color: '#8A4A0C' }
+    ];
+    const failures = [
+      { label: 'wrong_tool', count: 3, pct: '100%', color: '#9E2034', note: 'Không route tới clarify; v0 prompt khuyến khích đoán' },
+      { label: 'missing_info', count: 2, pct: '67%', color: '#8A4A0C', note: 'Thiếu handle / URL nhưng agent vẫn gọi tool' },
+      { label: 'wrong_arg_value', count: 1, pct: '33%', color: '#8A4A0C', note: 'Nhét từ khoá vào query thay vì topic' },
+      { label: 'wrong_boundary', count: 1, pct: '33%', color: '#6B4FA0', note: 'Gọi send khi chưa có xác nhận' },
+      { label: 'out_of_scope', count: 1, pct: '33%', color: '#6B4FA0', note: 'Trả lời ngoài phạm vi tool' }
+    ];
+    const fails = [
+      { id: 'R10', actual: 'gọi timeline', why: 'Thiếu tên tài khoản → đáng ra clarify. Prompt v0: "đoán một tài khoản nổi tiếng".' },
+      { id: 'R12', actual: 'gọi send', why: 'Gửi ngay không xác nhận → wrong_boundary + missing_info.' },
+      { id: 'R03', actual: 'lookup', why: 'query="AI news today" thay vì query="AI", topic="news".' },
+      { id: 'R14', actual: 'gọi send', why: 'User chưa yêu cầu gửi; agent tự gửi (extra tool call).' }
+    ];
+    return {
+      version, model: this.props.model ?? 'deepseek-v4-flash', promptHash: hash,
+      toolsHash: this.props.toolsHash ?? 'b93d71aa', accuracy,
+      toolRows: steps, roundCount: steps.length, totalMs: 2043,
+      digest: [
+        { n: '01', title: 'Google công bố Gemini mới', source: 'https://www.theverge.com/', link: 'https://www.theverge.com/' },
+        { n: '02', title: 'OpenAI ra mắt tính năng cho doanh nghiệp', source: 'https://openai.com/news/', link: 'https://openai.com/news/' },
+        { n: '03', title: 'Nghiên cứu diffusion model mới trên arXiv', source: 'https://arxiv.org/', link: 'https://arxiv.org/' }
+      ],
+      preview1: previews[0], preview2: previews[1], preview3: previews[2],
+      confirmed: sent,
+      confirmLabel: sent ? 'Đã gửi tới Telegram' : 'Xác nhận & gửi',
+      cancelLabel: cancelled ? 'Đã huỷ' : 'Huỷ',
+      confirmColor: sent ? '#176B4A' : '#0B4F8A',
+      sendStatus: sent
+        ? 'send(text=…, confirmed=true) → đã đăng channel. Transcript đã ghi lượt này.'
+        : cancelled
+          ? 'Không gửi gì cả. Agent quay lại trả lời trong khung chat.'
+          : 'Gửi là hành động không thu hồi được — cần người duyệt trước (bonus checklist).',
+      statusColor: sent ? '#176B4A' : cancelled ? '#5A6676' : '#8A4A0C',
+      confirmSend: () => this.setState({ sent: true, cancelled: false }),
+      cancelSend: () => this.setState({ cancelled: true, sent: false }),
+      editDigest: () => this.setState({ editOpen: true }),
+      asked,
+      railTools: [
+        { name: 'lookup', initials: 'lu', meta: '2 lần · 753 ms', bg: '#E8F0F8', fg: '#0B4F8A' },
+        { name: 'fetch', initials: 'fe', meta: '1 lần · 1287 ms', bg: '#E8F0F8', fg: '#0B4F8A' },
+        { name: 'format', initials: 'fo', meta: '1 lần · 3 ms', bg: '#E4F4EC', fg: '#176B4A' },
+        { name: 'send', initials: sent ? '✓' : '·', meta: sent ? 'đã gửi' : 'chờ xác nhận', bg: sent ? '#E4F4EC' : '#F3F0E4', fg: sent ? '#176B4A' : '#7A6216' }
+      ],
+      toolCount: sent ? 5 : 4,
+      toolMax: 10,
+      maxRounds: 4,
+      suggestions: suggestions.map(s => ({ ...s, pick: () => this.setState({ asked: true, sent: false, cancelled: false }) })),
+      tools,
+      metrics,
+      failures,
+      fails
+    };
+  }
+  render() {
+    return super.render({
+      asked: false,
+      passed: 12,
+      failed: 8,
+      notRouted: 3
+    });
+  }
+}
+</script>
+</body>
+</html>

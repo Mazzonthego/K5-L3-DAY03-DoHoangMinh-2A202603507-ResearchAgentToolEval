@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Pre-commit guard: refuse to commit anything that looks like a live API key.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Bypass (only if you are sure it is a false positive): git commit --no-verify
+set -u
+
+# (.env.example holds key NAMES only, so it is not scanned.)
+scan() {
+  grep -nEI \
+    -e 'sk-[A-Za-z0-9_-]{16,}' \
+    -e 'tvly-[A-Za-z0-9]{10,}' \
+    -e 'fc-[A-Za-z0-9]{16,}' \
+    -e 'xai-[A-Za-z0-9]{16,}' \
+    -e 'AIza[0-9A-Za-z_-]{30,}' \
+    -e '[0-9]{8,10}:AA[A-Za-z0-9_-]{30,}' \
+    -e '(RAPIDAPI|RAPID_API)_KEY[[:space:]]*=[[:space:]]*[^[:space:]]' \
+    -e '(TELEGRAM_BOT_TOKEN|TAVILY_API_KEY|FIRECRAWL_API_KEY|OPENROUTER_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY)[[:space:]]*=[[:space:]]*[^[:space:]]' \
+    -e 'Bearer [A-Za-z0-9._-]{20,}' \
+    -e 'api[_-]?key=[A-Za-z0-9]{16,}' \
+    -e 'token=[A-Za-z0-9]{20,}' \
+    --exclude='.env.example' \
+    --exclude='*.lock' \
+    --exclude='package-lock.json' \
+    -- "$@"
+}
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# Only added lines, and only text files: a binary's whole content would false-positive.
+hits=$(
+  git diff --cached -U0 --diff-filter=ACM -- $staged |
+    grep -aE '^\+' | grep -avE '^\+\+\+' |
+    grep -aEi 'key|token|secret|bearer|sk-' |
+    scan -
+)
+
+problems=0
+if [ -n "$hits" ]; then
+  echo "Possible secret in the lines you staged:" >&2
+  echo "$hits" | head -5 >&2
+  problems=1
+fi
+
+if [ "$problems" -ne 0 ]; then
+  echo "" >&2
+  echo "Commit blocked: a file you staged looks like it contains a real key." >&2
+  echo "Move keys into starter_v0/.env (gitignored). If it is a false positive, re-run with --no-verify." >&2
+  exit 1
+fi
+exit 0
