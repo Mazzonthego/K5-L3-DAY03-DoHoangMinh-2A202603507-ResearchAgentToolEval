@@ -157,3 +157,18 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  - name: compare_sources
+    description: "So sánh từ hai nguồn trở lên đã được thu thập để tìm chủ đề chung và từ khóa riêng của từng nguồn. Dùng sau lookup/fetch khi người dùng muốn đối chiếu nhiều nguồn. Không dùng để tìm nguồn mới hoặc kết luận hai nguồn đồng ý/mâu thuẫn về mặt ngữ nghĩa."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          description: "Danh sách ít nhất hai nguồn cần so sánh."
+          items:
+            type: object
+            properties:
+              title: {type: string, description: "Tiêu đề nguồn."}
+              summary: {type: string, description: "Nội dung tóm tắt của nguồn."}
+      required: [items]
