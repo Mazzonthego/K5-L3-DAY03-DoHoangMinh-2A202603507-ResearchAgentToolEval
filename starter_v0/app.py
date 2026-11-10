@@ -46,7 +46,7 @@ load_lab_env(ROOT)
 
 st.set_page_config(page_title="Research Agent — Demo", layout="wide")
 
-PROVIDERS = ["openrouter", "openai", "anthropic", "gemini", "ollama"]
+PROVIDERS = ["vietapi", "openrouter", "openai", "anthropic", "gemini", "ollama"]
 # (eval case id, question) — routing, clarify, digest and send in one place.
 SAMPLES = [
     ("R03", "Tổng hợp tin AI hôm nay trên X, có đủ nguồn, để mình đăng lên Telegram"),
@@ -682,8 +682,8 @@ def eval_tab() -> None:
 
 def init_state() -> None:
     profile = {
-        "provider": os.getenv("LAB_PROVIDER", "openrouter"),
-        "model": os.getenv("LAB_MODEL", ""),
+        "provider": os.getenv("LAB_PROVIDER", "vietapi"),
+        "model": os.getenv("LAB_MODEL", "nemetron-3-ultra"),
         "version": os.getenv("LAB_VERSION", "v0"),
     }
     if profile["provider"] not in PROVIDERS:
