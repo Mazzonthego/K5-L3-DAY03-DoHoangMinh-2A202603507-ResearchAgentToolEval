@@ -3,6 +3,7 @@ from providers.openrouter_provider import OpenRouterProvider
 from providers.anthropic_provider import AnthropicProvider
 from providers.gemini_provider import GeminiProvider
 from providers.ollama_provider import OllamaProvider
+from providers.vietapi_provider import VietAPIProvider
 
 
 def make_provider(name: str):
@@ -16,4 +17,6 @@ def make_provider(name: str):
         return GeminiProvider()
     if name == "ollama":
         return OllamaProvider()
+    if name == "vietapi":
+        return VietAPIProvider()
     raise ValueError(f"Unknown provider: {name}")

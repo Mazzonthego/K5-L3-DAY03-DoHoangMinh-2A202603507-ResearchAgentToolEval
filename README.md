@@ -310,6 +310,46 @@ Try at least 3 live turns, for example:
 - A request thiếu thông tin (không nói rõ account/URL), rồi lượt sau bổ sung.
 - Một request "đăng/gửi bản tin lên Telegram" — quan sát agent có hành động ngay hay hỏi lại trước, rồi tự quyết định hành vi nào mới đúng và sửa prompt cho khớp.
 
+## Demo UI (Streamlit) — chạy và deploy
+
+UI nằm ở `starter_v0/app.py`. Nó gọi đúng `chat.run_model_tool_loop` (không có logic agent riêng) và có 3 tab:
+
+| Tab | Cho thấy gì |
+|---|---|
+| **Console** | Chat thật với agent + trace từng tool (tên, tham số, kết quả, OK/LỖI) theo từng vòng. Có thẻ **Agent đang chờ** cho tool `clarify`, thẻ **Duyệt trước khi gửi lên Telegram** cho tool `send`, và bản tin `format` kèm nút xuất markdown. |
+| **Tool registry** | Danh sách tool đúng như model nhận được, đọc từ `artifacts/tools.yaml`. |
+| **Eval** | Đọc các run thật trong `starter_v0/runs/`: accuracy, loại lỗi thực tế, case fail. Không có số liệu giả. |
+
+### Chạy local
+
+```bash
+cd starter_v0
+cp .env.example .env            # điền key (xem TOOL-SETUP.md), KHÔNG commit file .env
+pip install -r requirements-streamlit.txt
+streamlit run app.py            # → http://localhost:8501
+```
+
+Hoặc một lệnh (tự tạo `.venv`, tự copy `.env.example` nếu chưa có `.env`):
+
+```bash
+bash deploy/setup.sh
+```
+
+Biến môi trường liên quan:
+
+| Biến | Ý nghĩa | Mặc định |
+|---|---|---|
+| `OPENROUTER_API_KEY` | key VietAPI (provider `openrouter`) | — |
+| `OPENROUTER_BASE_URL` | endpoint OpenAI-compatible | `https://api.vietapi.tech/v1` |
+| `OPENROUTER_MODEL` / ô Model trên UI | model | `deepseek-v4-flash` |
+| `LAB_PROVIDER`, `LAB_MODEL`, `LAB_VERSION` | profile khởi động của UI | `openrouter`, mặc định provider, `v0` |
+| `TAVILY_API_KEY`, `FIRECRAWL_API_KEY`, `RAPIDAPI_KEY` | tool tìm/đọc web | — |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | bật nút gửi Telegram (tùy chọn) | — |
+
+**An toàn khi demo:** agent ở UI chỉ *đề xuất* gửi Telegram; nội dung chỉ rời máy khi người dùng bấm **Gửi lên Telegram**, và tool `send` vẫn từ chối nếu thiếu cờ xác nhận. Telegram gửi vào chat mà bot đã được nhắn trước đó, không phải kênh công khai — đừng chia sẻ link dùng thử kèm chat ID của bạn.
+
+Bản thiết kế UI (desktop + mobile) nằm trong `designs/research-agent-demo/` (`Main.dc.html`, `Phone.dc.html`).
+
 ## Deploy nhanh để team khác dùng thử (khuyến nghị: Cloudflare Tunnel)
 
 Để team cùng zone tự thử agent trong Team showdown, expose UI đang chạy local ra một link public. Cách nhanh nhất, không cần đăng ký domain hay deploy lên cloud, là **Cloudflare Tunnel** (`cloudflared`).

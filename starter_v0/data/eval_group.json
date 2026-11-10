@@ -3,5 +3,27 @@
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G_rank_existing_posts_by_views",
+      "phase": "B",
+      "query": "Sắp xếp các bài đã có sau theo lượt xem giảm dần: [{\"title\": \"A\", \"metrics\": {\"views\": 10}}, {\"title\": \"B\", \"metrics\": {\"views\": 20}}].",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "rank_by_engagement", "args": {"metric": "views"}}]},
+      "metadata": {"what_it_tests": "Xếp hạng bài đã có theo lượt xem bằng tool local, không tìm lại bài."}
+    },
+    {
+      "id": "G01_trending_routing",
+      "phase": "B",
+      "suite": "group",
+      "query": "Trên X đang có gì hot vậy?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "trending_on_X","args": {}}]},
+      "metadata": {
+        "skill": "routing_trending_on_X",
+        "difficulty": "easy",
+        "what_it_tests": "Hỏi đang hot trên X mà KHÔNG có từ khóa → trending_on_X, không phải social_search/lookup, không clarify hỏi khu vực (mặc định vietnam)."
+      }
+    }
+  ]
 }
