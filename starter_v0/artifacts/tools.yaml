@@ -64,12 +64,24 @@ tools:
   #     required: [url]
 
   # v1
+  # - name: fetch
+  #   description: "Đọc nội dung văn bản của một trang web từ URL của trang đó."
+  #   parameters:
+  #     type: object
+  #     properties:
+  #       url: {type: string, default: "", description: "URL đầy đủ của trang, bắt đầu bằng https://"}
+  #     required: [url]
+
+  # v2
   - name: fetch
-    description: "Đọc nội dung văn bản của một trang web từ URL của trang đó."
+    description: "Đọc nội dung văn bản của một trang web. Dùng khi người dùng đưa một URL cụ thể, hoặc URL có trong kết quả của tool trước đó, và họ muốn đọc hoặc tóm tắt trang đó. Không dùng khi chưa có URL: không bao giờ tự đoán URL. Hãy gọi clarify để hỏi người dùng đường link. Nếu cần tìm các trang về một chủ đề, dùng lookup."
     parameters:
       type: object
       properties:
-        url: {type: string, default: "", description: "URL đầy đủ của trang, bắt đầu bằng https://"}
+        url:
+          type: string
+          default: ""
+          description: "URL đầy đủ có https://, chép nguyên văn từ tin nhắn của người dùng hoặc từ kết quả tool trước đó. Không truyền tên trang web hay từ khóa tìm kiếm."
       required: [url]
 
   - name: format
