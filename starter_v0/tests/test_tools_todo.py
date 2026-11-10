@@ -297,7 +297,54 @@ def test_timeline_reports_page_scope(monkeypatch, fake_http):
     result = TOOL_FUNCTIONS["timeline"]("owner")
     assert result["scope"] == "one_recent_api_page"
     assert result["has_more"] is True
+    # One policy file contains a quoted line that tries to give the assistant orders.
+    # Query that section (source_citation) and assert: that line is in untrusted_text, NOT in facts.
+    pytest.skip(TODO)
 
+
+# ---------------- compare_sources ----------------
+
+def test_compare_sources_happy_path() -> None:
+    items = [
+        {
+            "title": "Source 1",
+            "summary": "Artificial intelligence improves business productivity."
+        },
+        {
+            "title": "Source 2",
+            "summary": "Artificial intelligence improves business efficiency."
+        }
+    ]
+
+    result = TOOL_FUNCTIONS["compare_sources"](items)
+
+    assert result["source_count"] == 2
+    assert "artificial" in result["common_terms"]
+    assert "improves" in result["common_terms"]
+    assert "Common Topics" in result["markdown"]
+    assert "Individual Sources" in result["markdown"]
+
+
+def test_compare_sources_bad_input_from_model() -> None:
+    result = TOOL_FUNCTIONS["compare_sources"]("invalid input")
+
+    assert isinstance(result, dict)
+    assert "error" in result
+
+
+def test_compare_sources_failure_returns_error_dict() -> None:
+    items = [
+        {"title": "Source 1", "summary": "AI technology"},
+        None
+    ]
+
+    result = TOOL_FUNCTIONS["compare_sources"](items)
+
+    assert isinstance(result, dict)
+    assert "error" in result    
+
+# ---------------- trending_on_x ----------------
+    
 def test_trending_on_x_happy_path(monkeypatch, fake_http) -> None:
     trending_tool = TOOL_FUNCTIONS["trending_on_X"]
     monkeypatch.delenv("X_BEARER_TOKEN", raising=False)

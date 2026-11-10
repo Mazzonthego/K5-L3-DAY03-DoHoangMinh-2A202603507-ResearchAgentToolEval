@@ -17,6 +17,25 @@ def _terms(text: str) -> set[str]:
 
 def compare_sources(items: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     items = items or []
+    
+    if not isinstance(items, list) or len(items) < 2:
+        return {
+            "tool": "compare_sources",
+            "error": "At least 2 sources are required."
+        }
+
+    if not all(isinstance(item, dict) for item in items):
+        return {
+            "tool": "compare_sources",
+            "error": "Each source must be a dictionary."
+        }
+
+    for item in items:
+        if not isinstance(item.get("title", ""), str) or not isinstance(item.get("summary", ""), str):
+            return {
+                "tool": "compare_sources",
+                "error": "Source title and summary must be strings."
+            }
 
     if len(items) < 2:
         return {
