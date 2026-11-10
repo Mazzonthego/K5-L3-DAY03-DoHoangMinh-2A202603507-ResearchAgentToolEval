@@ -55,12 +55,21 @@ tools:
         max_results: {type: integer, default: 5, description: "Số kết quả"}
       required: [query]
 
+  # - name: fetch
+  #   description: "Lấy nội dung từ một địa chỉ."
+  #   parameters:
+  #     type: object
+  #     properties:
+  #       url: {type: string, default: "", description: "Địa chỉ"}
+  #     required: [url]
+
+  # v1
   - name: fetch
-    description: "Lấy nội dung từ một địa chỉ."
+    description: "Đọc nội dung văn bản của một trang web từ URL của trang đó."
     parameters:
       type: object
       properties:
-        url: {type: string, default: "", description: "Địa chỉ"}
+        url: {type: string, default: "", description: "URL đầy đủ của trang, bắt đầu bằng https://"}
       required: [url]
 
   - name: format
