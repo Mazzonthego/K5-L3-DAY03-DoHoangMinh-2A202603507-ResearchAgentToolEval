@@ -160,3 +160,38 @@ def test_rank_by_engagement_empty_items_succeeds() -> None:
     result = TOOL_FUNCTIONS["rank_by_engagement"]([])
     assert result["items"] == []
     assert result["item_count"] == 0
+
+
+@pytest.mark.parametrize("tool_name", ["timeline", "social_search"])
+def test_retweet_uses_original_post_metrics_and_url(tool_name, monkeypatch, fake_http):
+    monkeypatch.setenv("RAPIDAPI_KEY", "test-key")
+    original = {"tweet_id": "123", "text": "Original", "author": {"screen_name": "owner"},
+                "favorites": 1663, "retweets": 197, "views": "48347"}
+    wrapper = {"tweet_id": "456", "text": "RT @owner: Original", "screen_name": "owner",
+               "favorites": 0, "retweets": 197, "retweeted_tweet": original}
+    fake_http(FakeResponse({"timeline": [wrapper]}))
+    args = {"screenname": "owner"} if tool_name == "timeline" else {"query": "test"}
+    item = TOOL_FUNCTIONS[tool_name](**args)["items"][0]
+    assert item["url"] == "https://x.com/owner/status/123"
+    assert item["metrics"] == {"favorites": 1663, "retweets": 197, "views": "48347"}
+    assert item["metrics_scope"] == "original_post"
+    ranked = TOOL_FUNCTIONS["rank_by_engagement"]([item, {"metrics": {"favorites": 7}}])
+    assert ranked["items"][0] == item
+
+
+@pytest.mark.parametrize("tool_name", ["timeline", "social_search"])
+def test_retweet_without_original_does_not_report_wrapper_metrics(tool_name, monkeypatch, fake_http):
+    monkeypatch.setenv("RAPIDAPI_KEY", "test-key")
+    fake_http(FakeResponse({"timeline": [{"id": "456", "text": "RT @owner: Original", "favorites": 0}]}))
+    args = {"screenname": "owner"} if tool_name == "timeline" else {"query": "test"}
+    item = TOOL_FUNCTIONS[tool_name](**args)["items"][0]
+    assert item["metrics"]["favorites"] is None
+    assert item["metrics_scope"] == "original_unavailable"
+
+
+def test_timeline_reports_page_scope(monkeypatch, fake_http):
+    monkeypatch.setenv("RAPIDAPI_KEY", "test-key")
+    fake_http(FakeResponse({"timeline": [], "next_cursor": "next-page"}))
+    result = TOOL_FUNCTIONS["timeline"]("owner")
+    assert result["scope"] == "one_recent_api_page"
+    assert result["has_more"] is True

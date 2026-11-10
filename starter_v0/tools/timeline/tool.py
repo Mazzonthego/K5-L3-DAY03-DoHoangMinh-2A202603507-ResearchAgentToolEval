@@ -25,10 +25,17 @@ def _twitter_get(path: str, params: dict[str, Any]) -> dict[str, Any]:
 
 
 def _tweet_item(raw: dict[str, Any]) -> dict[str, Any]:
+    original = raw.get("retweeted_tweet")
+    is_retweet = bool(raw.get("retweeted")) or str(raw.get("text") or "").startswith("RT ")
+    if isinstance(original, dict) and (original.get("tweet_id") or original.get("id")):
+        item = _tweet_item(original)
+        item["is_retweet"] = True
+        item["metrics_scope"] = "original_post"
+        return item
     handle = raw.get("screen_name") or (raw.get("author") or {}).get("screen_name") or ""
     tweet_id = raw.get("tweet_id") or raw.get("id") or ""
     text = (raw.get("text") or "").strip()
-    return {
+    item = {
         "title": text.split("\n")[0][:120],
         "summary": text,
         "url": f"https://x.com/{handle}/status/{tweet_id}" if handle and tweet_id else "",
@@ -36,6 +43,12 @@ def _tweet_item(raw: dict[str, Any]) -> dict[str, Any]:
         "date": raw.get("created_at"),
         "metrics": {"favorites": raw.get("favorites"), "retweets": raw.get("retweets"), "views": raw.get("views")},
     }
+    if is_retweet:
+        # Wrapper engagement is not the original post's engagement.
+        item["is_retweet"] = True
+        item["metrics_scope"] = "original_unavailable"
+        item["metrics"] = {"favorites": None, "retweets": None, "views": None}
+    return item
 
 
 def _tweets_from(data: dict[str, Any], limit: int) -> list[dict[str, Any]]:
@@ -61,7 +74,9 @@ def get_user_tweets(screenname: str = "", limit: int = 5) -> dict[str, Any]:
         if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
             raise ValueError("limit must be a positive integer")
         data = _twitter_get("/timeline.php", {"screenname": screenname})
-        return {"tool": "get_user_tweets", "screenname": screenname, "items": _tweets_from(data, limit)}
+        items = _tweets_from(data, limit)
+        return {"tool": "get_user_tweets", "screenname": screenname, "items": items,
+                "scope": "one_recent_api_page", "has_more": bool(data.get("next_cursor"))}
     except Exception as exc:
         return err("get_user_tweets", exc)
 
