@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 import requests
@@ -38,13 +39,27 @@ def _tweet_item(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def _tweets_from(data: dict[str, Any], limit: int) -> list[dict[str, Any]]:
+    if not isinstance(data, dict):
+        raise ValueError("Expected an object from the timeline API")
     raw_items = data.get("timeline") or data.get("tweets") or []
-    items = [_tweet_item(item) for item in raw_items if item.get("tweet_id") or item.get("id")]
-    return items[: int(limit or 5)]
+    if not isinstance(raw_items, list):
+        raise ValueError("Expected a list of posts from the timeline API")
+    items = [_tweet_item(item) for item in raw_items
+             if isinstance(item, dict) and (item.get("tweet_id") or item.get("id"))]
+    return items[:limit]
 
 
 def get_user_tweets(screenname: str = "", limit: int = 5) -> dict[str, Any]:
     try:
+        if not isinstance(screenname, str):
+            raise ValueError("screenname must be an account handle")
+        screenname = screenname.strip().removeprefix("@")
+        if not re.fullmatch(r"[A-Za-z0-9_]{1,15}", screenname):
+            raise ValueError("screenname must contain 1-15 letters, digits, or underscores; pass a handle, not a URL")
+        if isinstance(limit, str) and limit.strip().isascii() and limit.strip().isdigit():
+            limit = int(limit.strip())
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            raise ValueError("limit must be a positive integer")
         data = _twitter_get("/timeline.php", {"screenname": screenname})
         return {"tool": "get_user_tweets", "screenname": screenname, "items": _tweets_from(data, limit)}
     except Exception as exc:
