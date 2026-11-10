@@ -119,6 +119,34 @@ tools:
       required: [items, template]
 
   # ---------------- Bonus tools ----------------
+  - name: rank_by_engagement
+    description: "Sắp xếp các bài đã có theo lượt thích, chia sẻ hoặc xem. Lấy một mẫu bài trước khi xếp hạng; kết quả chỉ áp dụng cho bài đã lấy, không đại diện toàn bộ lịch sử tài khoản."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          description: "Danh sách bài và metrics từ timeline hoặc social_search."
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              summary: {type: string}
+              url: {type: string}
+              source: {type: string}
+              date: {type: string}
+              is_retweet: {type: boolean}
+              metrics_scope: {type: string}
+              metrics:
+                type: object
+                properties:
+                  favorites: {description: "Lượt thích dạng số, chuỗi số hoặc null."}
+                  retweets: {description: "Lượt chia sẻ dạng số, chuỗi số hoặc null."}
+                  views: {description: "Lượt xem dạng số, chuỗi số hoặc null."}
+        metric: {type: string, enum: [favorites, retweets, views], default: favorites}
+        limit: {type: integer, minimum: 1, description: "Số kết quả tối đa sau khi xếp hạng."}
+      required: [items]
+
   - name: send
     description: "Gửi một đoạn văn bản đi."
     parameters:
@@ -157,3 +185,18 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  - name: compare_sources
+    description: "So sánh từ hai nguồn trở lên đã được thu thập để tìm chủ đề chung và từ khóa riêng của từng nguồn. Dùng sau lookup/fetch khi người dùng muốn đối chiếu nhiều nguồn. Không dùng để tìm nguồn mới hoặc kết luận hai nguồn đồng ý/mâu thuẫn về mặt ngữ nghĩa."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          description: "Danh sách ít nhất hai nguồn cần so sánh."
+          items:
+            type: object
+            properties:
+              title: {type: string, description: "Tiêu đề nguồn."}
+              summary: {type: string, description: "Nội dung tóm tắt của nguồn."}
+      required: [items]

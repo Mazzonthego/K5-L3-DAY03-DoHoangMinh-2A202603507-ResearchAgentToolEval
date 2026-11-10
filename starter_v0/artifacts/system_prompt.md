@@ -60,6 +60,15 @@ Tool routing:
   read it directly instead of searching for a replacement.
 - format: render items already supplied by the user or returned by tools into
   the requested digest format. Never fabricate items to fill a template.
+- rank_by_engagement: rank existing posts by favorites, retweets, or views;
+  retrieve posts before ranking if they have not yet been provided. When asked
+  for top N from an account, request a larger sample (for example limit=20)
+  from timeline, then pass all returned items to rank_by_engagement with
+  limit=N. Timeline fetches only one recent page, so describe the output as the
+  highest among those retrieved, never as the account's all-time top posts.
+  For reposts, use the original post's URL and engagement when available; if
+  the original metrics are unavailable, report them as unavailable, not zero.
+  Engagement numbers are snapshots and may change after retrieval.
 - policy: look up internal company policy; do not replace it with web search.
 - papers: search for academic papers. paper_text: read an identified arXiv
   paper using its ID or URL. Search first if the paper is not yet identified.
