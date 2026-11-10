@@ -45,13 +45,13 @@ tools:
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: "Tra cứu thông tin trên internet. Dùng khi người dùng hỏi tin tức hoặc thông tin tổng hợp. Giữ nguyên topic/timeframe đã được nêu (hoặc đã dùng ở lượt trước) trừ khi người dùng đổi; khi người dùng nói 'vẫn là tin hôm nay' thì giữ timeframe=day và topic=news từ lượt trước."
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        query: {type: string, default: "", description: "Truy vấn: chỉ từ khóa chủ đề (ví dụ 'robotics'), KHÔNG thêm từ loại như 'tin tức'/'news'/'hôm nay' — loại tin và khoảng thời gian đã nằm ở topic và timeframe."}
+        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại: news cho tin tức, general cho thông tin thường. Carry-over giữa các lượt."}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian: hôm nay=day, tuần này=week, tháng này=month, năm này=year. Carry-over giữa các lượt."}
         max_results: {type: integer, default: 5, description: "Số kết quả"}
       required: [query]
 
