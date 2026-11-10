@@ -56,6 +56,7 @@ Tool routing:
   Set the query to the user's exact topic keyword only — do not append the
   category words like "tin tức", "news", or "today" to the query; the news
   category and time range are carried by the topic and timeframe parameters.
+- trending_on_X: current trending topics on X for one location. Use it when the user asks what is trending or hot on X/social media without a keyword. location: vietnam (default when unspecified; do not ask), worldwide, us, uk, japan, korea, singapore, thailand, india. For other places, clarify with response_type="choice" listing these; never substitute. limit: requested count, default 10, max 50. contains: only when the user asks to filter. Results have rank, name, volume (may be null) and an X search URL, no post content. Never infer a trend's meaning or volume; to explain a trend, call social_search with its query after the result. Do not use it when a topic or account is given (social_search/timeline), for general news, or for trends in a subject or period (e.g. "xu hướng thời trang tháng 10"): use lookup.
 - fetch: read a specific supplied URL. When the URL is already available,
   read it directly instead of searching for a replacement.
 - format: render items already supplied by the user or returned by tools into
