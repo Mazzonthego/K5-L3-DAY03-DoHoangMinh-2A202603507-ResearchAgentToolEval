@@ -74,15 +74,27 @@ tools:
   #     required: [url]
 
   # v2
+  # - name: fetch
+  #   description: "Đọc nội dung văn bản của một trang web. Dùng khi người dùng đưa một URL cụ thể, hoặc URL có trong kết quả của tool trước đó, và họ muốn đọc hoặc tóm tắt trang đó. Không dùng khi chưa có URL: không bao giờ tự đoán URL. Hãy gọi clarify để hỏi người dùng đường link. Nếu cần tìm các trang về một chủ đề, dùng lookup."
+  #   parameters:
+  #     type: object
+  #     properties:
+  #       url:
+  #         type: string
+  #         default: ""
+  #         description: "URL đầy đủ có https://, chép nguyên văn từ tin nhắn của người dùng hoặc từ kết quả tool trước đó. Không truyền tên trang web hay từ khóa tìm kiếm."
+  #     required: [url]
+
+  # v3
   - name: fetch
-    description: "Đọc nội dung văn bản của một trang web. Dùng khi người dùng đưa một URL cụ thể, hoặc URL có trong kết quả của tool trước đó, và họ muốn đọc hoặc tóm tắt trang đó. Không dùng khi chưa có URL: không bao giờ tự đoán URL. Hãy gọi clarify để hỏi người dùng đường link. Nếu cần tìm các trang về một chủ đề, dùng lookup."
+    description: "Tải và trả về nội dung văn bản (đã bỏ HTML) của MỘT trang web, từ một URL đã biết. Dùng khi: người dùng gửi một URL cụ thể và muốn đọc, tóm tắt, trích ý hoặc hỏi về nội dung trang đó; hoặc cần đọc chi tiết một URL đã xuất hiện trong kết quả trước đó. Không dùng khi: chưa có URL thật trong hội thoại. Tuyệt đối không tự đoán hoặc tự ghép URL (kể cả kiểu \"https://tenmien.com/...\"); nếu người dùng nhắc tới một trang mà không đưa link thì không gọi fetch, hãy hỏi lại họ đường link. Mỗi lần gọi chỉ đọc một URL; nếu có nhiều URL thì gọi fetch nhiều lần."
     parameters:
       type: object
       properties:
         url:
           type: string
           default: ""
-          description: "URL đầy đủ có https://, chép nguyên văn từ tin nhắn của người dùng hoặc từ kết quả tool trước đó. Không truyền tên trang web hay từ khóa tìm kiếm."
+          description: "Đường link đầy đủ của trang cần đọc, có cả https:// ở đầu. Hãy copy y nguyên link mà người dùng gửi hoặc link đã có trong kết quả trước đó, đừng sửa hay cắt bớt gì. Chỉ ghi tên trang hoặc tên miền thôi thì chưa đủ, và cũng đừng điền từ khóa vào đây."
       required: [url]
 
   - name: format
