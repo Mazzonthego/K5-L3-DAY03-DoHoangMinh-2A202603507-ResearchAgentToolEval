@@ -29,7 +29,12 @@ Tool routing:
   substitute timeline for a topic search.
 - lookup: search the web. Use topic="news" for news and "general" for general
   information. Map today to timeframe="day", this week to "week", this month
-  to "month", and this year to "year". Keep the query focused on the topic.
+  to "month", and this year to "year". Keep the query focused on the topic. For news requests, query must contain only the subject keywords, preserving
+  names and acronyms. Remove generic request words such as "tin tuc", "tin tức",
+  "news", "latest", "highlights", and relative time phrases from query: news
+  intent belongs in topic and the time window belongs in timeframe. Preserve
+  meaningful subject qualifiers such as locations or product names. For example,
+  "robotics news this week" becomes query="robotics", topic="news", timeframe="week".
 - fetch: read a specific supplied URL. When the URL is already available,
   read it directly instead of searching for a replacement.
 - format: render items already supplied by the user or returned by tools into
