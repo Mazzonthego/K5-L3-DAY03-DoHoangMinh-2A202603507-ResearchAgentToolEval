@@ -2,23 +2,226 @@
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
   "description": "Case do NHÓM tự viết thêm để cover thêm trường hợp. Mỗi case cần: id, phase='B', query HOẶC turns, failure_type (thuộc allowed_failure_types), và expect (tool_calls[...] hoặc no_tool=true). Nên kèm metadata.what_it_tests.",
-  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
+  "allowed_failure_types": [
+    "wrong_tool",
+    "wrong_arg_value",
+    "wrong_boundary",
+    "unnecessary_tool",
+    "out_of_scope",
+    "missing_info"
+  ],
   "cases": [
     {
-      "id": "G_rank_existing_posts_by_views",
+      "id": "G01_compare_three_provided_sources",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Nguồn 1: AI can automate repetitive tasks and improve employee productivity."
+        },
+        {
+          "role": "user",
+          "content": "Nguồn 2: Artificial intelligence helps organizations reduce operating costs and optimize workflows."
+        },
+        {
+          "role": "user",
+          "content": "Nguồn 3: AI adoption may increase efficiency but also change workforce skill requirements."
+        },
+        {
+          "role": "user",
+          "content": "So sánh cả ba nguồn, chỉ ra chủ đề chung và điểm khác biệt."
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "compare_sources",
+            "args": {}
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_compare_three_provided_sources",
+        "difficulty": "medium",
+        "what_it_tests": "Người dùng đã cung cấp ba nguồn trong hội thoại và yêu cầu đối chiếu → gọi compare_sources, không gọi lookup hoặc fetch."
+      }
+    },
+    {
+      "id": "G02_compare_user_provided_sources",
+      "phase": "B",
+      "turns": [
+        {
+          "role": "user",
+          "content": "Nguồn 1: AI giúp doanh nghiệp tự động hóa quy trình, tăng năng suất và giảm chi phí vận hành."
+        },
+        {
+          "role": "user",
+          "content": "Nguồn 2: Ứng dụng AI giúp cải thiện hiệu quả hoạt động và giảm chi phí cho doanh nghiệp."
+        },
+        {
+          "role": "user",
+          "content": "So sánh hai nguồn trên về điểm chung và từ khóa khác biệt."
+        }
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "compare_sources",
+            "args": {}
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_compare_sources_provided_content",
+        "difficulty": "medium",
+        "what_it_tests": "Người dùng đã cung cấp ít nhất hai nguồn → dùng compare_sources, không gọi lookup hoặc fetch."
+      }
+    },
+    {
+      "id": "G03_search_not_compare",
+      "phase": "B",
+      "query": "Tìm 5 nguồn đáng tin cậy về ứng dụng AI trong giáo dục đại học.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "lookup",
+            "args": {
+              "query": "ứng dụng AI trong giáo dục đại học"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_lookup_not_compare",
+        "difficulty": "easy",
+        "what_it_tests": "Người dùng chỉ yêu cầu tìm nguồn mới, chưa yêu cầu so sánh → gọi lookup, không gọi compare_sources."
+      }
+    },
+    {
+      "id": "G04_compare_missing_sources",
+      "phase": "B",
+      "query": "So sánh hai bài báo này và cho biết điểm khác biệt chính.",
+      "failure_type": "missing_info",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "clarify_missing_comparison_sources",
+        "difficulty": "medium",
+        "what_it_tests": "Yêu cầu so sánh nhưng chưa cung cấp hoặc xác định hai nguồn → hỏi người dùng cung cấp URL hoặc nội dung, không tự tạo nguồn."
+      }
+    },
+    {
+      "id": "G05_fetch_before_comparison",
+      "phase": "B",
+      "query": "Đọc nội dung bài viết tại https://openai.com/blog/gpt-5 để chuẩn bị so sánh với một nguồn khác.",
+      "failure_type": "wrong_tool",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "fetch",
+            "args": {
+              "url": "https://openai.com/blog/gpt-5"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "routing_fetch_source_for_later_comparison",
+        "difficulty": "medium",
+        "what_it_tests": "Người dùng cung cấp URL cụ thể và yêu cầu đọc nội dung → gọi fetch, chưa đủ hai nguồn để gọi compare_sources."
+      }
+    },
+    {
+      "id": "G06_summary_not_comparison",
+      "phase": "B",
+      "query": "Tóm tắt nguồn sau trong 3 ý: AI is changing how companies automate repetitive tasks and improve productivity.",
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "metadata": {
+        "skill": "summary_without_comparison_tool",
+        "difficulty": "easy",
+        "what_it_tests": "Người dùng cung cấp nội dung và chỉ yêu cầu tóm tắt → trả lời trực tiếp, không gọi compare_sources."
+      }
+    },
+    {
+      "id": "G07_explain_tool_capability",
+      "phase": "B",
+      "query": "compare_sources khác lookup ở điểm nào?",
+      "failure_type": "unnecessary_tool",
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "metadata": {
+        "skill": "explain_tool_capabilities_without_call",
+        "difficulty": "easy",
+        "what_it_tests": "Người dùng hỏi giải thích sự khác nhau giữa hai tool → trả lời trực tiếp, không thực thi tool."
+      }
+    },
+    {
+      "id": "G08_out_of_scope_math",
+      "phase": "B",
+      "query": "So sánh hai biểu thức đại số (x + 2)^2 và x^2 + 4x + 4 rồi chứng minh chúng bằng nhau.",
+      "failure_type": "out_of_scope",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "metadata": {
+        "skill": "out_of_scope_math_comparison",
+        "difficulty": "easy",
+        "what_it_tests": "Yêu cầu toán học ngoài phạm vi research agent → không gọi compare_sources hoặc tool research."
+      }
+    },
+    {
+      "id": "G09_rank_existing_posts_by_views",
       "phase": "B",
       "query": "Sắp xếp các bài đã có sau theo lượt xem giảm dần: [{\"title\": \"A\", \"metrics\": {\"views\": 10}}, {\"title\": \"B\", \"metrics\": {\"views\": 20}}].",
       "failure_type": "wrong_tool",
-      "expect": {"tool_calls": [{"name": "rank_by_engagement", "args": {"metric": "views"}}]},
-      "metadata": {"what_it_tests": "Xếp hạng bài đã có theo lượt xem bằng tool local, không tìm lại bài."}
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "rank_by_engagement",
+            "args": {
+              "metric": "views"
+            }
+          }
+        ]
+      },
+      "metadata": {
+        "skill": "rank_existing_posts_by_views",
+        "difficulty": "easy",
+        "what_it_tests": "Xếp hạng bài đã có theo lượt xem bằng tool local, không tìm lại bài."
+      }
     },
     {
-      "id": "G01_trending_routing",
+      "id": "G10_trending_routing",
       "phase": "B",
       "suite": "group",
       "query": "Trên X đang có gì hot vậy?",
       "failure_type": "wrong_tool",
-      "expect": {"tool_calls": [{"name": "trending_on_X","args": {}}]},
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "trending_on_X",
+            "args": {}
+          }
+        ]
+      },
       "metadata": {
         "skill": "routing_trending_on_X",
         "difficulty": "easy",
