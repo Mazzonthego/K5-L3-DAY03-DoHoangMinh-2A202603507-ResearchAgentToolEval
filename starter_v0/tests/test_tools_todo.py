@@ -115,18 +115,42 @@ def test_policy_instruction_like_lines_go_to_untrusted_text() -> None:
 
 
 # ---------------- YOUR NEW TOOL(S) ----------------
-# Write at least 3 tests per tool your team adds:
-#   1. happy path (mocked if it calls an API)
-#   2. bad / missing input from the model (empty string, wrong type, out-of-enum value)
-#   3. failure path (missing key, HTTP error, timeout) -> returns error dict, does not raise
 
-def test_my_new_tool_happy_path() -> None:
-    pytest.skip(TODO)
+def test_compare_sources_happy_path() -> None:
+    items = [
+        {
+            "title": "Source 1",
+            "summary": "Artificial intelligence improves business productivity."
+        },
+        {
+            "title": "Source 2",
+            "summary": "Artificial intelligence improves business efficiency."
+        }
+    ]
+
+    result = TOOL_FUNCTIONS["compare_sources"](items)
+
+    assert result["source_count"] == 2
+    assert "artificial" in result["common_terms"]
+    assert "improves" in result["common_terms"]
+    assert "Common Topics" in result["markdown"]
+    assert "Individual Sources" in result["markdown"]
 
 
-def test_my_new_tool_bad_input_from_model() -> None:
-    pytest.skip(TODO)
+def test_compare_sources_bad_input_from_model() -> None:
+    result = TOOL_FUNCTIONS["compare_sources"]("invalid input")
+
+    assert isinstance(result, dict)
+    assert "error" in result
 
 
-def test_my_new_tool_failure_returns_error_dict() -> None:
-    pytest.skip(TODO)
+def test_compare_sources_failure_returns_error_dict() -> None:
+    items = [
+        {"title": "Source 1", "summary": "AI technology"},
+        None
+    ]
+
+    result = TOOL_FUNCTIONS["compare_sources"](items)
+
+    assert isinstance(result, dict)
+    assert "error" in result    
