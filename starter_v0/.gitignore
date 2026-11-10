@@ -6,12 +6,3 @@ __pycache__/
 .env.*
 !.env.example
 arxiv_papers/
-
-
-/HUONG-DAN-CLARIFY-TIMELINE.md
-/artifacts/system_prompt_clarify_timeline.md
-/artifacts/tools_clarify_timeline.yaml
-/tests/test_clarify_timeline.py
-/transcripts/clarify-timeline-v1_openrouter_20261110T103234913207.transcript.json
-/transcripts/clarify-timeline-v2_openrouter_20261110T103319486400.transcript.json
-/transcripts/clarify-timeline-v2_openrouter_20261110T103531598180.transcript.json
