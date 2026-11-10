@@ -120,13 +120,43 @@ def test_policy_instruction_like_lines_go_to_untrusted_text() -> None:
 #   2. bad / missing input from the model (empty string, wrong type, out-of-enum value)
 #   3. failure path (missing key, HTTP error, timeout) -> returns error dict, does not raise
 
-def test_my_new_tool_happy_path() -> None:
-    pytest.skip(TODO)
+def test_rank_by_engagement_sorts_limits_and_keeps_input() -> None:
+    items = [
+        {"title": "A", "metrics": {"views": "1,200"}},
+        {"title": "B", "metrics": {"views": 2500}},
+        {"title": "C", "metrics": {"views": "2500"}},
+        {"title": "Missing", "metrics": {"views": None}},
+    ]
+    result = TOOL_FUNCTIONS["rank_by_engagement"](items, metric="views", limit=3)
+    assert [item["title"] for item in result["items"]] == ["B", "C", "A"]
+    assert result["item_count"] == 3
+    assert [item["title"] for item in items] == ["A", "B", "C", "Missing"]
 
 
-def test_my_new_tool_bad_input_from_model() -> None:
-    pytest.skip(TODO)
+@pytest.mark.parametrize("args", [
+    {}, {"items": "invalid"}, {"items": [None]},
+    {"items": [], "metric": "likes"},
+    {"items": [], "limit": 0}, {"items": [], "limit": True},
+])
+def test_rank_by_engagement_invalid_arguments_return_error(args) -> None:
+    result = TOOL_FUNCTIONS["rank_by_engagement"](**args)
+    assert result["error"] == "ValueError"
+    assert "message" in result
 
 
-def test_my_new_tool_failure_returns_error_dict() -> None:
-    pytest.skip(TODO)
+@pytest.mark.parametrize("value", ["unknown", "NaN", -1, True, [], float("inf")])
+def test_rank_by_engagement_invalid_metric_value_returns_error(value) -> None:
+    result = TOOL_FUNCTIONS["rank_by_engagement"]([{"metrics": {"favorites": value}}])
+    assert result["error"] == "ValueError"
+
+
+def test_rank_by_engagement_missing_metric_is_last_not_zero() -> None:
+    items = [{"title": "missing"}, {"title": "zero", "metrics": {"favorites": 0}}]
+    result = TOOL_FUNCTIONS["rank_by_engagement"](items)
+    assert [item["title"] for item in result["items"]] == ["zero", "missing"]
+
+
+def test_rank_by_engagement_empty_items_succeeds() -> None:
+    result = TOOL_FUNCTIONS["rank_by_engagement"]([])
+    assert result["items"] == []
+    assert result["item_count"] == 0
